@@ -100,19 +100,19 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
             // Game Image
             if (widget.game.backgroundImage != null)
               ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
                 child: Image.network(
                   widget.game.backgroundImage!,
                   width: double.infinity,
-                  height: 200,
+                  height: 220,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       width: double.infinity,
-                      height: 200,
+                      height: 220,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Icon(
                         Icons.videogame_asset,
@@ -129,15 +129,29 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
             // Start Date
             Card(
               child: ListTile(
-                leading: const Icon(Icons.play_arrow),
+                leading: Icon(
+                  Icons.play_arrow,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 title: const Text('Start Date'),
                 subtitle: Text(
                   _startDate != null
                       ? DateFormat('yyyy-MM-dd').format(_startDate!)
                       : 'Not set',
+                  style: TextStyle(
+                    color: _startDate != null
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
                 ),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                ),
                 onTap: _selectStartDate,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
 
@@ -146,15 +160,29 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
             // Completion Date
             Card(
               child: ListTile(
-                leading: const Icon(Icons.check_circle),
+                leading: Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
                 title: const Text('Completion Date'),
                 subtitle: Text(
                   _completionDate != null
                       ? DateFormat('yyyy-MM-dd').format(_completionDate!)
                       : 'Not set',
+                  style: TextStyle(
+                    color: _completionDate != null
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
                 ),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                ),
                 onTap: _selectCompletionDate,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
 
@@ -162,14 +190,19 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
             // Personal Rating
             Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Personal Rating',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -207,14 +240,19 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
             // Notes
             Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Notes',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
@@ -224,7 +262,10 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                         hintText: 'Add your thoughts about this game...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                       ),
                     ),
                   ],
@@ -237,17 +278,21 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
             // Save Button
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
+              child: FilledButton.icon(
                 onPressed: _saveChanges,
+                icon: const Icon(Icons.check_circle),
+                label: const Text(
+                  'Save Changes',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(fontSize: 16),
                 ),
               ),
             ),

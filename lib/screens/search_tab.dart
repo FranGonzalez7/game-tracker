@@ -47,12 +47,18 @@ class _SearchTabState extends ConsumerState<SearchTab> {
       children: [
         // Search Bar
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Search for games...',
-              prefixIcon: const Icon(Icons.search),
+              hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              ),
+              prefixIcon: Icon(
+                Icons.search,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.clear),
@@ -61,13 +67,9 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                         _lastQuery = '';
                         ref.read(gameSearchProvider.notifier).clearSearch();
                       },
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     )
                   : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             ),
             onChanged: _performSearch,
           ),
@@ -122,7 +124,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                   final isSaved = savedGames.any((g) => g.id == game.id);
                   
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 16),
                     child: GameSearchCard(
                       game: game,
                       isSaved: isSaved,
@@ -190,7 +192,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                           ),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton.icon(
+                    FilledButton.icon(
                       onPressed: () {
                         if (_searchController.text.isNotEmpty) {
                           _performSearch(_searchController.text);
@@ -198,6 +200,9 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                       },
                       icon: const Icon(Icons.refresh),
                       label: const Text('Retry'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
                     ),
                   ],
                 ),

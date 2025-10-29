@@ -18,12 +18,26 @@ class GameSearchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        margin: EdgeInsets.zero,
+        child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Game Image
@@ -119,18 +133,27 @@ class GameSearchCard extends StatelessWidget {
                           ),
                     ),
                   ],
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
                       onPressed: isSaved ? null : onAdd,
                       icon: Icon(
-                        isSaved ? Icons.check : Icons.add,
-                        size: 18,
+                        isSaved ? Icons.check_circle : Icons.add_circle_outline,
+                        size: 20,
                       ),
-                      label: Text(isSaved ? 'Saved' : 'Add'),
+                      label: Text(
+                        isSaved ? 'Saved' : 'Add to My Games',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
@@ -139,6 +162,7 @@ class GameSearchCard extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

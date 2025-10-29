@@ -19,12 +19,26 @@ class GameListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: InkWell(
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        margin: EdgeInsets.zero,
+        child: InkWell(
         onTap: onTap,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,6 +172,7 @@ class GameListCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

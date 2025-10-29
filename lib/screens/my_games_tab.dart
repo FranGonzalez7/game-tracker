@@ -49,7 +49,7 @@ class MyGamesTab extends ConsumerWidget {
       itemBuilder: (context, index) {
         final game = savedGames[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(bottom: 16),
           child: GameListCard(
             game: game,
             onTap: () async {

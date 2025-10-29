@@ -18,6 +18,8 @@ class MainScreen extends StatelessWidget {
             'Game Tracker',
             style: TextStyle(
               fontWeight: FontWeight.bold,
+              fontSize: 24,
+              letterSpacing: -0.5,
             ),
           ),
           centerTitle: true,
