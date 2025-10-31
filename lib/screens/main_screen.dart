@@ -52,6 +52,13 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
         centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: Container(
+            height: 3,
+            color: const Color(0xFF8B00FF), // Violeta potente
+          ),
+        ),
         actions: [
           Consumer(
             builder: (context, ref, _) {
@@ -69,65 +76,95 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       body: _buildBody(),
-      bottomNavigationBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton.filled(
-                onPressed: () => setState(() => _currentIndex = 0),
-                icon: const Icon(Icons.card_giftcard_outlined, size: 22),
-                tooltip: 'Wishlist',
-                style: IconButton.styleFrom(
-                  backgroundColor: Color(0xFFE52521),
-                  foregroundColor: Colors.white,
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Color(0xFF8B00FF), // Violeta potente
+              width: 3,
+            ),
+          ),
+        ),
+        child: BottomAppBar(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton.filled(
+                  onPressed: () => setState(() => _currentIndex = 0),
+                  icon: const Icon(Icons.card_giftcard_outlined, size: 22),
+                  tooltip: 'Wishlist',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Color(0xFFE52521),
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  isSelected: _currentIndex == 0,
                 ),
-                isSelected: _currentIndex == 0,
-              ),
-              IconButton.filled(
-                onPressed: () => setState(() => _currentIndex = 1),
-                icon: const Icon(Icons.search, size: 22),
-                tooltip: 'Search',
-                style: IconButton.styleFrom(
-                  backgroundColor: Color(0xFF00A65E),
-                  foregroundColor: Colors.white,
+                IconButton.filled(
+                  onPressed: () => setState(() => _currentIndex = 1),
+                  icon: const Icon(Icons.search, size: 22),
+                  tooltip: 'Search',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Color(0xFF00A65E),
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  isSelected: _currentIndex == 1,
                 ),
-                isSelected: _currentIndex == 1,
-              ),
-              IconButton.filled(
-                onPressed: () => setState(() => _currentIndex = 2),
-                icon: const Icon(Icons.home_outlined, size: 28),
-                tooltip: 'Home',
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  fixedSize: const Size(56, 56),
+                IconButton.filled(
+                  onPressed: () => setState(() => _currentIndex = 2),
+                  icon: const Icon(Icons.home_outlined, size: 28),
+                  tooltip: 'Home',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    fixedSize: const Size(56, 56),
+                    side: const BorderSide(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  isSelected: _currentIndex == 2,
                 ),
-                isSelected: _currentIndex == 2,
-              ),
-              IconButton.filled(
-                onPressed: () => setState(() => _currentIndex = 3),
-                icon: const Icon(Icons.receipt_long_outlined, size: 22),
-                tooltip: 'Lists',
-                style: IconButton.styleFrom(
-                  backgroundColor: Color(0xFF2E6DB4),
-                  foregroundColor: Colors.white,
+                IconButton.filled(
+                  onPressed: () => setState(() => _currentIndex = 3),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 22),
+                  tooltip: 'Lists',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Color(0xFF2E6DB4),
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  isSelected: _currentIndex == 3,
                 ),
-                isSelected: _currentIndex == 3,
-              ),
-              IconButton.filled(
-                onPressed: () => setState(() => _currentIndex = 4),
-                icon: const Icon(Icons.settings_outlined, size: 22),
-                tooltip: 'Settings',
-                style: IconButton.styleFrom(
-                  backgroundColor: Color(0xFFF7D51D),
-                  foregroundColor: Colors.black,
+                IconButton.filled(
+                  onPressed: () => setState(() => _currentIndex = 4),
+                  icon: const Icon(Icons.settings_outlined, size: 22),
+                  tooltip: 'Settings',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Color(0xFFF7D51D),
+                    foregroundColor: Colors.black,
+                    side: const BorderSide(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  isSelected: _currentIndex == 4,
                 ),
-                isSelected: _currentIndex == 4,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

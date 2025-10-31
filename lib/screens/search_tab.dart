@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/game_provider.dart';
-import '../providers/saved_games_provider.dart';
 import '../widgets/game_search_card.dart';
+import '../widgets/game_detail_modal.dart';
 
 /// Tab screen for searching games from the RAWG API
 /// Displays a search bar and list of search results
@@ -41,7 +41,6 @@ class _SearchTabState extends ConsumerState<SearchTab> {
   @override
   Widget build(BuildContext context) {
     final searchResults = ref.watch(gameSearchProvider);
-    final savedGames = ref.watch(savedGamesProvider);
 
     return Column(
       children: [
@@ -116,42 +115,32 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              // Calculate crossAxisCount based on screen width (minimum 2, up to 3)
+              final screenWidth = MediaQuery.of(context).size.width;
+              final crossAxisCount = screenWidth > 600 ? 3 : 2;
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.7, // Ajusta la proporción según necesites
+                ),
                 itemCount: games.length,
                 itemBuilder: (context, index) {
                   final game = games[index];
-                  final isSaved = savedGames.any((g) => g.id == game.id);
                   
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: GameSearchCard(
-                      game: game,
-                      isSaved: isSaved,
-                      onAdd: () async {
-                        try {
-                          await ref.read(savedGamesProvider.notifier).addGame(game);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${game.name} added to My Games'),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error adding game: $e'),
-                                duration: const Duration(seconds: 3),
-                                backgroundColor: Theme.of(context).colorScheme.error,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    ),
+                  return GameSearchCard(
+                    game: game,
+                    onTap: () {
+                      GameDetailModal.show(
+                        context,
+                        game,
+                        allGames: games,
+                        initialIndex: index,
+                      );
+                    },
                   );
                 },
               );
