@@ -10,7 +10,8 @@ class AuthService {
 
   /// Stream que emite cambios en el estado de autenticación
   /// Útil para escuchar cuando un usuario inicia o cierra sesión
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  /// Usa userChanges() en lugar de authStateChanges() para evitar errores de tipo
+  Stream<User?> get authStateChanges => _auth.userChanges();
 
   /// Registra un nuevo usuario con correo y contraseña
   /// Retorna el User creado si el registro es exitoso

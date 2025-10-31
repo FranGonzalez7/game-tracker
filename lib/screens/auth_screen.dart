@@ -40,7 +40,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 children: [
                   SvgPicture.asset(
                     'assets/logo_snes_buttons.svg',
-                    height: 96,
+                    height: 160,
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -52,7 +52,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Gestiona tu colección de videojuegos',
+                    'Gestiona tus videojuegos',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
