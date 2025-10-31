@@ -20,11 +20,12 @@ class GameDetailModal extends StatefulWidget {
 
   /// Shows the game detail modal centered on the screen
   /// Allows swiping between games if a list is provided
-  static void show(BuildContext context, Game game, {List<Game>? allGames, int? initialIndex}) {
+  /// Returns true if user wants to add to wishlist, null otherwise
+  static Future<bool?> show(BuildContext context, Game game, {List<Game>? allGames, int? initialIndex}) async {
     final games = allGames ?? [game];
     final index = initialIndex ?? 0;
     
-    showDialog(
+    final result = await showDialog<bool>(
       context: context,
       barrierDismissible: true, // Permite cerrar tocando fuera del modal
       builder: (context) => GameDetailModal(
@@ -32,6 +33,8 @@ class GameDetailModal extends StatefulWidget {
         initialIndex: index,
       ),
     );
+    
+    return result;
   }
 }
 
@@ -101,7 +104,13 @@ class _GameDetailModalState extends State<GameDetailModal> {
                 onPageChanged: _onPageChanged,
                 itemCount: widget.games.length,
                 itemBuilder: (context, index) {
-                  return _GameDetailContent(game: widget.games[index]);
+                  final game = widget.games[index];
+                  return _GameDetailContent(
+                    game: game,
+                    onAddToWishlist: () {
+                      Navigator.of(context).pop(true);
+                    },
+                  );
                 },
               ),
             ),
@@ -115,8 +124,12 @@ class _GameDetailModalState extends State<GameDetailModal> {
 /// Widget that displays the content for a single game
 class _GameDetailContent extends StatelessWidget {
   final Game game;
+  final VoidCallback onAddToWishlist;
 
-  const _GameDetailContent({required this.game});
+  const _GameDetailContent({
+    required this.game,
+    required this.onAddToWishlist,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +286,26 @@ class _GameDetailContent extends StatelessWidget {
                   const SizedBox(height: 20),
                 ],
 
-                // Close Button
+                // Wishlist Button and Close Button
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: onAddToWishlist,
+                        icon: const Icon(Icons.card_giftcard),
+                        label: const Text('Añadir a Wishlist'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: const Color(0xFFE52521), // Rojo para wishlist
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(

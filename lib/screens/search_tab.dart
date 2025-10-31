@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/game_provider.dart';
 import '../widgets/game_search_card.dart';
 import '../widgets/game_detail_modal.dart';
+import '../providers/wishlist_provider.dart';
 
 /// Tab screen for searching games from the RAWG API
 /// Displays a search bar and list of search results
@@ -133,13 +134,40 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                   
                   return GameSearchCard(
                     game: game,
-                    onTap: () {
-                      GameDetailModal.show(
+                    onTap: () async {
+                      final result = await GameDetailModal.show(
                         context,
                         game,
                         allGames: games,
                         initialIndex: index,
                       );
+                      
+                      // Si el usuario quiere añadir a la wishlist
+                      if (result == true) {
+                        final wishlistNotifier = ref.read(wishlistNotifierProvider.notifier);
+                        try {
+                          await wishlistNotifier.addToWishlist(game);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${game.name} añadido a la wishlist'),
+                                duration: const Duration(seconds: 2),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error al añadir a la wishlist: $e'),
+                                duration: const Duration(seconds: 3),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
                     },
                   );
                 },

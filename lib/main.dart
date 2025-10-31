@@ -19,15 +19,21 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-  } catch (e) {
-    // Si Firebase no está configurado, se mostrará un error
-    // Nota: Ejecuta 'flutterfire configure' para generar firebase_options.dart
+    debugPrint('Firebase inicializado correctamente');
+  } catch (e, stackTrace) {
+    // Si Firebase no está configurado, mostrar error detallado
     debugPrint('Error al inicializar Firebase: $e');
+    debugPrint('Stack trace: $stackTrace');
+    // Continuar ejecutando pero mostrar error en la UI
   }
   
   // Initialize storage service
-  final storageService = StorageService();
-  await storageService.init();
+  try {
+    final storageService = StorageService();
+    await storageService.init();
+  } catch (e) {
+    debugPrint('Error al inicializar StorageService: $e');
+  }
   
   runApp(
     const ProviderScope(
