@@ -1,0 +1,44 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Brillo/reflejo en los botones -->
+    <radialGradient id="buttonShine" cx="40%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Sombra suave para profundidad -->
+    <filter id="buttonShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Fondo transparente - se integra con la app -->
+  
+  <!-- Botón X (azul) - Norte (arriba) -->
+  <g transform="translate(256, 120)" filter="url(#buttonShadow)">
+    <circle r="64" fill="#2b62e9"/>
+    <circle r="60" fill="none" stroke="#ffffff" stroke-width="5"/>
+    <circle r="58" fill="url(#buttonShine)"/>
+  </g>
+
+  <!-- Botón A (rojo) - Este (derecha) -->
+  <g transform="translate(392, 256)" filter="url(#buttonShadow)">
+    <circle r="64" fill="#d43b3b"/>
+    <circle r="60" fill="none" stroke="#ffffff" stroke-width="5"/>
+    <circle r="58" fill="url(#buttonShine)"/>
+  </g>
+
+  <!-- Botón B (amarillo) - Sur (abajo) -->
+  <g transform="translate(256, 392)" filter="url(#buttonShadow)">
+    <circle r="64" fill="#f1c40f"/>
+    <circle r="60" fill="none" stroke="#ffffff" stroke-width="5"/>
+    <circle r="58" fill="url(#buttonShine)"/>
+  </g>
+
+  <!-- Botón Y (verde) - Oeste (izquierda) -->
+  <g transform="translate(120, 256)" filter="url(#buttonShadow)">
+    <circle r="64" fill="#2bb673"/>
+    <circle r="60" fill="none" stroke="#ffffff" stroke-width="5"/>
+    <circle r="58" fill="url(#buttonShine)"/>
+  </g>
+</svg>

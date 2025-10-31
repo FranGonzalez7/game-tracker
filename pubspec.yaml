@@ -28,6 +28,13 @@ dependencies:
   
   # UI Icons
   cupertino_icons: ^1.0.2
+  
+  # SVG rendering
+  flutter_svg: ^2.0.9
+  
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +45,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  
+  # Assets
+  assets:
+    - assets/
