@@ -1,49 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/wishlist_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/game_search_card.dart';
 import '../widgets/game_detail_modal.dart';
 
 /// Tab screen for displaying user's wishlist
 /// Shows games saved to wishlist from Firestore
-class WishlistTab extends ConsumerStatefulWidget {
+class WishlistTab extends ConsumerWidget {
   const WishlistTab({super.key});
 
   @override
-  ConsumerState<WishlistTab> createState() => _WishlistTabState();
-}
-
-class _WishlistTabState extends ConsumerState<WishlistTab> {
-  int gridColumns = 3; // Default: 3 columns
-  bool isListView = false; // Default: grid view
-
-  void increaseCardSize() {
-    if (gridColumns > 1) {
-      setState(() {
-        gridColumns--;
-        isListView = false;
-      });
-    }
-  }
-
-  void decreaseCardSize() {
-    if (gridColumns < 5) {
-      setState(() {
-        gridColumns++;
-        isListView = false;
-      });
-    }
-  }
-
-  void toggleView() {
-    setState(() {
-      isListView = !isListView;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final wishlistAsync = ref.watch(wishlistStreamProvider);
+    final viewSettings = ref.watch(wishlistViewSettingsProvider);
+
+    void increaseCardSize() {
+      if (viewSettings.gridColumns > 1) {
+        ref.read(wishlistViewSettingsProvider.notifier).setGridColumns(viewSettings.gridColumns - 1);
+      }
+    }
+
+    void decreaseCardSize() {
+      if (viewSettings.gridColumns < 5) {
+        ref.read(wishlistViewSettingsProvider.notifier).setGridColumns(viewSettings.gridColumns + 1);
+      }
+    }
+
+    void toggleView() {
+      ref.read(wishlistViewSettingsProvider.notifier).setListView(!viewSettings.isListView);
+    }
 
     return wishlistAsync.when(
       data: (games) {
@@ -99,7 +85,7 @@ class _WishlistTabState extends ConsumerState<WishlistTab> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Size controls (only show in grid view)
-                  if (!isListView)
+                  if (!viewSettings.isListView)
                     Row(
                       children: [
                         IconButton(
@@ -133,9 +119,9 @@ class _WishlistTabState extends ConsumerState<WishlistTab> {
                   // List/Grid toggle button
                   IconButton(
                     onPressed: toggleView,
-                    icon: Icon(isListView ? Icons.grid_view : Icons.list),
+                    icon: Icon(viewSettings.isListView ? Icons.grid_view : Icons.list),
                     iconSize: 20,
-                    tooltip: isListView ? 'Vista de cuadrícula' : 'Vista de lista',
+                    tooltip: viewSettings.isListView ? 'Vista de cuadrícula' : 'Vista de lista',
                     style: IconButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
                       foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -148,15 +134,54 @@ class _WishlistTabState extends ConsumerState<WishlistTab> {
             ),
             // Game list or grid
             Expanded(
-              child: isListView
-                  ? ListView.builder(
-                      padding: const EdgeInsets.all(12),
-                      itemCount: games.length,
-                      itemBuilder: (context, index) {
-                        final game = games[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: GameWishlistListCard(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(begin: 0.90, end: 1.0).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: viewSettings.isListView
+                    ? ListView.builder(
+                        key: const ValueKey('list'),
+                        padding: const EdgeInsets.all(12),
+                        itemCount: games.length,
+                        itemBuilder: (context, index) {
+                          final game = games[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: GameWishlistListCard(
+                              game: game,
+                              onTap: () {
+                                GameDetailModal.show(
+                                  context,
+                                  game,
+                                  allGames: games,
+                                  initialIndex: index,
+                                  isInWishlist: true,
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      )
+                    : GridView.builder(
+                        key: ValueKey('grid_${viewSettings.gridColumns}'),
+                        padding: const EdgeInsets.all(12),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: viewSettings.gridColumns,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: 0.85,
+                        ),
+                        itemCount: games.length,
+                        itemBuilder: (context, index) {
+                          final game = games[index];
+                          return GameWishlistCard(
                             game: game,
                             onTap: () {
                               GameDetailModal.show(
@@ -164,36 +189,13 @@ class _WishlistTabState extends ConsumerState<WishlistTab> {
                                 game,
                                 allGames: games,
                                 initialIndex: index,
+                                isInWishlist: true,
                               );
                             },
-                          ),
-                        );
-                      },
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(12),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: gridColumns,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                        childAspectRatio: 0.85,
+                          );
+                        },
                       ),
-                      itemCount: games.length,
-                      itemBuilder: (context, index) {
-                        final game = games[index];
-                        return GameWishlistCard(
-                          game: game,
-                          onTap: () {
-                            GameDetailModal.show(
-                              context,
-                              game,
-                              allGames: games,
-                              initialIndex: index,
-                            );
-                          },
-                        );
-                      },
-                    ),
+              ),
             ),
           ],
         );

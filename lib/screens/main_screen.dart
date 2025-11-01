@@ -5,8 +5,6 @@ import 'home_tab.dart';
 import 'wishlist_tab.dart';
 import 'lists_tab.dart';
 import 'settings_tab.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/theme_provider.dart';
 
 /// Main screen with tabs for Search and My Games
 /// Uses Material 3 design with a clean, modern interface
@@ -59,21 +57,6 @@ class _MainScreenState extends State<MainScreen> {
             color: const Color(0xFF8B00FF), // Violeta potente
           ),
         ),
-        actions: [
-          Consumer(
-            builder: (context, ref, _) {
-              final mode = ref.watch(themeModeProvider);
-              final isDark = mode == ThemeMode.dark;
-              return IconButton(
-                tooltip: isDark ? 'Cambiar a claro' : 'Cambiar a oscuro',
-                onPressed: () {
-                  ref.read(themeModeProvider.notifier).state = isDark ? ThemeMode.light : ThemeMode.dark;
-                },
-                icon: Icon(isDark ? Icons.wb_sunny_outlined : Icons.nightlight_round),
-              );
-            },
-          ),
-        ],
       ),
       body: _buildBody(),
       bottomNavigationBar: Container(

@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/game.dart';
+import '../providers/wishlist_provider.dart';
 
 /// Modal widget that displays detailed information about a game
 /// Appears centered on the screen as a dialog
 /// Allows swiping left/right to navigate between games
-class GameDetailModal extends StatefulWidget {
+class GameDetailModal extends ConsumerStatefulWidget {
   final List<Game> games;
   final int initialIndex;
+  final bool isInWishlist;
 
   const GameDetailModal({
     super.key,
     required this.games,
     required this.initialIndex,
+    this.isInWishlist = false,
   });
 
   @override
-  State<GameDetailModal> createState() => _GameDetailModalState();
+  ConsumerState<GameDetailModal> createState() => _GameDetailModalState();
 
   /// Shows the game detail modal centered on the screen
   /// Allows swiping between games if a list is provided
-  /// Returns true if user wants to add to wishlist, null otherwise
-  static Future<bool?> show(BuildContext context, Game game, {List<Game>? allGames, int? initialIndex}) async {
+  /// Returns true if user wants to add to wishlist, false if remove, null otherwise
+  static Future<bool?> show(BuildContext context, Game game, {List<Game>? allGames, int? initialIndex, bool isInWishlist = false}) async {
     final games = allGames ?? [game];
     final index = initialIndex ?? 0;
     
@@ -31,6 +35,7 @@ class GameDetailModal extends StatefulWidget {
       builder: (context) => GameDetailModal(
         games: games,
         initialIndex: index,
+        isInWishlist: isInWishlist,
       ),
     );
     
@@ -38,14 +43,12 @@ class GameDetailModal extends StatefulWidget {
   }
 }
 
-class _GameDetailModalState extends State<GameDetailModal> {
+class _GameDetailModalState extends ConsumerState<GameDetailModal> {
   late PageController _pageController;
-  late int _currentIndex;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
   }
 
@@ -55,19 +58,38 @@ class _GameDetailModalState extends State<GameDetailModal> {
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+  Future<void> _handleWishlistAction(Game game) async {
+    if (widget.isInWishlist) {
+      // Remove from wishlist
+      try {
+        await ref.read(wishlistNotifierProvider.notifier).removeFromWishlist(game.id);
+        if (mounted) {
+          Navigator.of(context).pop(false);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al quitar de la wishlist: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } else {
+      // Add to wishlist - return true to signal the caller
+      Navigator.of(context).pop(true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.zero,
       child: Container(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxWidth: MediaQuery.of(context).size.width * 0.83,
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
         decoration: BoxDecoration(
@@ -78,43 +100,17 @@ class _GameDetailModalState extends State<GameDetailModal> {
             width: 3,
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Page indicator
-            if (widget.games.length > 1)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  '${_currentIndex + 1} / ${widget.games.length}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF8B00FF),
-                      ) ?? const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF8B00FF),
-                      ),
-                ),
-              ),
-            
-            // PageView for swiping
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                itemCount: widget.games.length,
-                itemBuilder: (context, index) {
-                  final game = widget.games[index];
-                  return _GameDetailContent(
-                    game: game,
-                    onAddToWishlist: () {
-                      Navigator.of(context).pop(true);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: widget.games.length,
+          itemBuilder: (context, index) {
+            final game = widget.games[index];
+            return _GameDetailContent(
+              game: game,
+              isInWishlist: widget.isInWishlist,
+              onWishlistAction: () => _handleWishlistAction(game),
+            );
+          },
         ),
       ),
     );
@@ -124,11 +120,13 @@ class _GameDetailModalState extends State<GameDetailModal> {
 /// Widget that displays the content for a single game
 class _GameDetailContent extends StatelessWidget {
   final Game game;
-  final VoidCallback onAddToWishlist;
+  final bool isInWishlist;
+  final VoidCallback onWishlistAction;
 
   const _GameDetailContent({
     required this.game,
-    required this.onAddToWishlist,
+    required this.isInWishlist,
+    required this.onWishlistAction,
   });
 
   @override
@@ -140,7 +138,7 @@ class _GameDetailContent extends StatelessWidget {
         children: [
           // Game Image
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             child: game.backgroundImage != null
                 ? CachedNetworkImage(
                     imageUrl: game.backgroundImage!,
@@ -171,7 +169,7 @@ class _GameDetailContent extends StatelessWidget {
                     height: 250,
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                     ),
                     child: Icon(
                       Icons.videogame_asset,
@@ -291,15 +289,17 @@ class _GameDetailContent extends StatelessWidget {
                   children: [
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: onAddToWishlist,
-                        icon: const Icon(Icons.card_giftcard),
-                        label: const Text('Añadir a Wishlist'),
+                        onPressed: onWishlistAction,
+                        icon: Icon(isInWishlist ? Icons.delete_outline : Icons.card_giftcard),
+                        label: Text(isInWishlist ? 'Quitar de la Wishlist' : 'Añadir a Wishlist'),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          backgroundColor: const Color(0xFFE52521), // Rojo para wishlist
+                          backgroundColor: isInWishlist 
+                              ? Theme.of(context).colorScheme.error 
+                              : const Color(0xFFE52521), // Rojo para wishlist
                         ),
                       ),
                     ),

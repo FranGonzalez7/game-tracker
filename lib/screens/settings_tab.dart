@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../providers/theme_provider.dart';
 
 class SettingsTab extends ConsumerWidget {
   const SettingsTab({super.key});
@@ -89,6 +90,24 @@ class SettingsTab extends ConsumerWidget {
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, __) => const SizedBox.shrink(),
+        ),
+        const SizedBox(height: 24),
+        // Configuración de tema
+        Card(
+          child: SwitchListTile(
+            title: const Text('Modo oscuro'),
+            subtitle: const Text('Activar el tema oscuro'),
+            value: ref.watch(themeModeProvider) == ThemeMode.dark,
+            onChanged: (value) {
+              ref.read(themeModeProvider.notifier).state = 
+                  value ? ThemeMode.dark : ThemeMode.light;
+            },
+            secondary: Icon(
+              ref.watch(themeModeProvider) == ThemeMode.dark 
+                  ? Icons.nightlight_round 
+                  : Icons.wb_sunny_outlined,
+            ),
+          ),
         ),
         const SizedBox(height: 24),
         // Botón de cerrar sesión

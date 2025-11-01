@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game.dart';
 import '../services/firestore_service.dart';
+import 'auth_provider.dart';
 
 /// Provider para el servicio de Firestore
 final firestoreServiceProvider = Provider<FirestoreService>((ref) {
@@ -9,15 +11,37 @@ final firestoreServiceProvider = Provider<FirestoreService>((ref) {
 
 /// Provider que proporciona un Stream de la wishlist del usuario
 /// Se actualiza automáticamente cuando cambian los datos en Firestore
-final wishlistStreamProvider = StreamProvider<List<Game>>((ref) {
-  final firestoreService = ref.watch(firestoreServiceProvider);
+/// Reacciona a cambios en el estado de autenticación
+final wishlistStreamProvider = StreamProvider<List<Game>>((ref) async* {
+  // Escuchar cambios en el estado de autenticación
+  final authState = ref.watch(authStateProvider);
   
-  // Si el usuario no está autenticado, retorna una lista vacía
-  if (!firestoreService.isAuthenticated) {
-    return Stream.value([]);
+  // Determinar si el usuario está autenticado
+  final isAuthenticated = authState.value != null;
+  
+  // Si el usuario no está autenticado, retornar lista vacía
+  if (!isAuthenticated) {
+    yield <Game>[];
+    return;
   }
   
-  return firestoreService.getWishlistStream();
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  
+  // Escuchar el stream de la wishlist con manejo de errores
+  try {
+    await for (final games in firestoreService.getWishlistStream()) {
+      yield games;
+    }
+  } catch (error) {
+    // Capturar errores de permisos y retornar lista vacía
+    if (error.toString().contains('permission-denied') || 
+        error.toString().contains('The caller does not have permission')) {
+      yield <Game>[];
+      return;
+    }
+    // Para otros errores, re-lanzar el error
+    rethrow;
+  }
 });
 
 /// Provider que verifica si un juego está en la wishlist
