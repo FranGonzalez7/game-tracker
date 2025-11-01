@@ -79,3 +79,4 @@ final wishlistNotifierProvider = StateNotifierProvider<WishlistNotifier, AsyncVa
   return WishlistNotifier(firestoreService, ref);
 });
 
+

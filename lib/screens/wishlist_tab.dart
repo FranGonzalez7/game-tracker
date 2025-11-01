@@ -48,23 +48,20 @@ class WishlistTab extends ConsumerWidget {
           );
         }
 
-        // Calculate crossAxisCount based on screen width (minimum 2, up to 3)
-        final screenWidth = MediaQuery.of(context).size.width;
-        final crossAxisCount = screenWidth > 600 ? 3 : 2;
-
+        // Fixed 3 columns layout with square cards
         return GridView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.7,
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 0.85, // More square format
           ),
           itemCount: games.length,
           itemBuilder: (context, index) {
             final game = games[index];
             
-            return GameSearchCard(
+            return GameWishlistCard(
               game: game,
               onTap: () {
                 GameDetailModal.show(
