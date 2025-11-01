@@ -6,11 +6,43 @@ import '../widgets/game_detail_modal.dart';
 
 /// Tab screen for displaying user's wishlist
 /// Shows games saved to wishlist from Firestore
-class WishlistTab extends ConsumerWidget {
+class WishlistTab extends ConsumerStatefulWidget {
   const WishlistTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WishlistTab> createState() => _WishlistTabState();
+}
+
+class _WishlistTabState extends ConsumerState<WishlistTab> {
+  int gridColumns = 3; // Default: 3 columns
+  bool isListView = false; // Default: grid view
+
+  void increaseCardSize() {
+    if (gridColumns > 1) {
+      setState(() {
+        gridColumns--;
+        isListView = false;
+      });
+    }
+  }
+
+  void decreaseCardSize() {
+    if (gridColumns < 5) {
+      setState(() {
+        gridColumns++;
+        isListView = false;
+      });
+    }
+  }
+
+  void toggleView() {
+    setState(() {
+      isListView = !isListView;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final wishlistAsync = ref.watch(wishlistStreamProvider);
 
     return wishlistAsync.when(
@@ -48,31 +80,122 @@ class WishlistTab extends ConsumerWidget {
           );
         }
 
-        // Fixed 3 columns layout with square cards
-        return GridView.builder(
-          padding: const EdgeInsets.all(12),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 0.85, // More square format
-          ),
-          itemCount: games.length,
-          itemBuilder: (context, index) {
-            final game = games[index];
-            
-            return GameWishlistCard(
-              game: game,
-              onTap: () {
-                GameDetailModal.show(
-                  context,
-                  game,
-                  allGames: games,
-                  initialIndex: index,
-                );
-              },
-            );
-          },
+        return Column(
+          children: [
+            // Options toolbar
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Size controls (only show in grid view)
+                  if (!isListView)
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: decreaseCardSize,
+                          icon: const Icon(Icons.remove),
+                          iconSize: 20,
+                          tooltip: 'Reducir tamaño',
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                            minimumSize: const Size(36, 36),
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: increaseCardSize,
+                          icon: const Icon(Icons.add),
+                          iconSize: 20,
+                          tooltip: 'Aumentar tamaño',
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                            minimumSize: const Size(36, 36),
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  // List/Grid toggle button
+                  IconButton(
+                    onPressed: toggleView,
+                    icon: Icon(isListView ? Icons.grid_view : Icons.list),
+                    iconSize: 20,
+                    tooltip: isListView ? 'Vista de cuadrícula' : 'Vista de lista',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                      foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                      minimumSize: const Size(36, 36),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Game list or grid
+            Expanded(
+              child: isListView
+                  ? ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: games.length,
+                      itemBuilder: (context, index) {
+                        final game = games[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: GameWishlistListCard(
+                            game: game,
+                            onTap: () {
+                              GameDetailModal.show(
+                                context,
+                                game,
+                                allGames: games,
+                                initialIndex: index,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    )
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: gridColumns,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        childAspectRatio: 0.85,
+                      ),
+                      itemCount: games.length,
+                      itemBuilder: (context, index) {
+                        final game = games[index];
+                        return GameWishlistCard(
+                          game: game,
+                          onTap: () {
+                            GameDetailModal.show(
+                              context,
+                              game,
+                              allGames: games,
+                              initialIndex: index,
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
       loading: () => const Center(
