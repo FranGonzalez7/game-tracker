@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'search_tab.dart';
 import 'home_tab.dart';
 import 'wishlist_tab.dart';
 import 'lists_tab.dart';
 import 'settings_tab.dart';
+import '../widgets/profile_modal.dart';
+import '../providers/auth_provider.dart';
 
 /// Main screen with tabs for Search and My Games
 /// Uses Material 3 design with a clean, modern interface
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   int _currentIndex = 2; // Home por defecto
 
   static const _titles = ['Wishlist', 'Search', 'Home', 'Lists', 'Settings'];
@@ -39,6 +43,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -50,6 +56,56 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          authState.when(
+            data: (user) {
+              if (user == null) return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: () {
+                  ProfileModal.show(context, ref);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF8B00FF),
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: user.photoURL != null
+                        ? CachedNetworkImage(
+                            imageUrl: user.photoURL!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Icon(
+                              Icons.person,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                          )
+                        : Icon(
+                            Icons.person,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                  ),
+                ),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: Container(
