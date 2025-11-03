@@ -77,24 +77,12 @@ class GameSearchCard extends ConsumerWidget {
                             ),
                           ),
                     Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 6,
+                    right: 6,
                     child: isInWishlistAsync.when(
                       data: (isInWishlist) {
-                        final bg = isInWishlist ? const Color(0xFF6A1B9A) : const Color(0xFF8B00FF);
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: bg,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.card_giftcard_outlined,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            onPressed: () async {
+                        return GestureDetector(
+                          onTap: () async {
                               final wishlistNotifier = ref.read(wishlistNotifierProvider.notifier);
                               try {
                                 if (isInWishlist) {
@@ -131,9 +119,30 @@ class GameSearchCard extends ConsumerWidget {
                                   );
                                 }
                               }
-                            },
-                            padding: const EdgeInsets.all(8),
-                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                          },
+                          behavior: HitTestBehavior.opaque,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: isInWishlist
+                                ? BoxDecoration(
+                                    color: const Color(0xFF4CAF50),
+                                    borderRadius: BorderRadius.circular(12),
+                                  )
+                                : BoxDecoration(
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        const Color(0xFF8B00FF).withOpacity(0.85),
+                                        const Color(0x00000000),
+                                      ],
+                                      radius: 0.8,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                            child: const Icon(
+                              Icons.card_giftcard_outlined,
+                              size: 18,
+                              color: Colors.white,
+                            ),
                           ),
                         );
                       },

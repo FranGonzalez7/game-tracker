@@ -10,13 +10,11 @@ import '../providers/wishlist_provider.dart';
 class GameDetailModal extends ConsumerStatefulWidget {
   final List<Game> games;
   final int initialIndex;
-  final bool isInWishlist;
 
   const GameDetailModal({
     super.key,
     required this.games,
     required this.initialIndex,
-    this.isInWishlist = false,
   });
 
   @override
@@ -24,22 +22,18 @@ class GameDetailModal extends ConsumerStatefulWidget {
 
   /// Shows the game detail modal centered on the screen
   /// Allows swiping between games if a list is provided
-  /// Returns true if user wants to add to wishlist, false if remove, null otherwise
-  static Future<bool?> show(BuildContext context, Game game, {List<Game>? allGames, int? initialIndex, bool isInWishlist = false}) async {
+  static Future<void> show(BuildContext context, Game game, {List<Game>? allGames, int? initialIndex}) async {
     final games = allGames ?? [game];
     final index = initialIndex ?? 0;
     
-    final result = await showDialog<bool>(
+    await showDialog(
       context: context,
       barrierDismissible: true, // Permite cerrar tocando fuera del modal
       builder: (context) => GameDetailModal(
         games: games,
         initialIndex: index,
-        isInWishlist: isInWishlist,
       ),
     );
-    
-    return result;
   }
 }
 
@@ -56,30 +50,6 @@ class _GameDetailModalState extends ConsumerState<GameDetailModal> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleWishlistAction(Game game) async {
-    if (widget.isInWishlist) {
-      // Remove from wishlist
-      try {
-        await ref.read(wishlistNotifierProvider.notifier).removeFromWishlist(game.id);
-        if (mounted) {
-          Navigator.of(context).pop(false);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error al quitar de la wishlist: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } else {
-      // Add to wishlist - return true to signal the caller
-      Navigator.of(context).pop(true);
-    }
   }
 
   @override
@@ -107,8 +77,6 @@ class _GameDetailModalState extends ConsumerState<GameDetailModal> {
             final game = widget.games[index];
             return _GameDetailContent(
               game: game,
-              isInWishlist: widget.isInWishlist,
-              onWishlistAction: () => _handleWishlistAction(game),
             );
           },
         ),
@@ -118,19 +86,17 @@ class _GameDetailModalState extends ConsumerState<GameDetailModal> {
 }
 
 /// Widget that displays the content for a single game
-class _GameDetailContent extends StatelessWidget {
+class _GameDetailContent extends ConsumerWidget {
   final Game game;
-  final bool isInWishlist;
-  final VoidCallback onWishlistAction;
 
   const _GameDetailContent({
     required this.game,
-    required this.isInWishlist,
-    required this.onWishlistAction,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isInWishlistAsync = ref.watch(wishlistCheckerProvider(game.id));
+    
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -197,7 +163,7 @@ class _GameDetailContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Rating
+                // Rating with Wishlist Icon
                 if (game.rating != null) ...[
                   Row(
                     children: [
@@ -215,6 +181,77 @@ class _GameDetailContent extends StatelessWidget {
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
                             ),
+                      ),
+                      const SizedBox(width: 16),
+                      isInWishlistAsync.when(
+                        data: (isInWishlist) {
+                          return GestureDetector(
+                            onTap: () async {
+                              final wishlistNotifier = ref.read(wishlistNotifierProvider.notifier);
+                              try {
+                                if (isInWishlist) {
+                                  await wishlistNotifier.removeFromWishlist(game.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('${game.name} eliminado de la wishlist'),
+                                        duration: const Duration(seconds: 2),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  await wishlistNotifier.addToWishlist(game);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('${game.name} añadido a la wishlist'),
+                                        duration: const Duration(seconds: 2),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error al actualizar wishlist: $e'),
+                                      duration: const Duration(seconds: 3),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: isInWishlist
+                                  ? BoxDecoration(
+                                      color: const Color(0xFF4CAF50),
+                                      borderRadius: BorderRadius.circular(12),
+                                    )
+                                  : BoxDecoration(
+                                      gradient: RadialGradient(
+                                        colors: [
+                                          const Color(0xFF8B00FF).withOpacity(0.85),
+                                          const Color(0x00000000),
+                                        ],
+                                        radius: 0.8,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                              child: const Icon(
+                                Icons.card_giftcard_outlined,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
                       ),
                     ],
                   ),
@@ -284,28 +321,7 @@ class _GameDetailContent extends StatelessWidget {
                   const SizedBox(height: 20),
                 ],
 
-                // Wishlist Button and Close Button
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: onWishlistAction,
-                        icon: Icon(isInWishlist ? Icons.delete_outline : Icons.card_giftcard),
-                        label: Text(isInWishlist ? 'Quitar de la Wishlist' : 'Añadir a Wishlist'),
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          backgroundColor: isInWishlist 
-                              ? Theme.of(context).colorScheme.error 
-                              : const Color(0xFFE52521), // Rojo para wishlist
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+                // Close Button
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(

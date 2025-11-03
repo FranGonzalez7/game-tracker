@@ -162,7 +162,6 @@ class WishlistTab extends ConsumerWidget {
                                   game,
                                   allGames: games,
                                   initialIndex: index,
-                                  isInWishlist: true,
                                 );
                               },
                             ),
@@ -189,7 +188,6 @@ class WishlistTab extends ConsumerWidget {
                                 game,
                                 allGames: games,
                                 initialIndex: index,
-                                isInWishlist: true,
                               );
                             },
                           );
