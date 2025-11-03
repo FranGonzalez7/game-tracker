@@ -114,6 +114,80 @@ class FirestoreService {
       );
     }).toList();
   }
+
+  // ==================== LISTAS PERSONALIZADAS ====================
+
+  /// Referencia a la colección de listas personalizadas del usuario
+  CollectionReference _getListsCollection() {
+    final userId = currentUserId;
+    if (userId == null) {
+      throw Exception('Usuario no autenticado');
+    }
+    return _firestore.collection('users').doc(userId).collection('lists');
+  }
+
+  /// Crea una nueva lista con nombre
+  Future<DocumentReference> createList(String name) async {
+    if (!isAuthenticated) {
+      throw Exception('Usuario no autenticado');
+    }
+    final listsRef = _getListsCollection();
+    final now = FieldValue.serverTimestamp();
+    return await listsRef.add({
+      'name': name,
+      'createdAt': now,
+      'updatedAt': now,
+    });
+  }
+
+  /// Asegura que existan las listas predeterminadas del usuario
+  Future<void> ensureDefaultLists() async {
+    if (!isAuthenticated) {
+      throw Exception('Usuario no autenticado');
+    }
+
+    final listsRef = _getListsCollection();
+    final now = FieldValue.serverTimestamp();
+    final currentYear = DateTime.now().year;
+
+    final favoritesId = 'favorites';
+    final playedYearId = 'played_year_$currentYear';
+
+    // Crear/actualizar con IDs deterministas para evitar duplicados
+    await listsRef.doc(favoritesId).set({
+      'name': 'Mis juegos favoritos',
+      'isDefault': true,
+      'key': favoritesId,
+      'createdAt': now,
+      'updatedAt': now,
+    }, SetOptions(merge: true));
+
+    await listsRef.doc(playedYearId).set({
+      'name': 'Jugados en $currentYear',
+      'isDefault': true,
+      'key': playedYearId,
+      'createdAt': now,
+      'updatedAt': now,
+    }, SetOptions(merge: true));
+  }
+
+  /// Stream de listas del usuario
+  Stream<List<Map<String, dynamic>>> getUserListsStream() {
+    if (!isAuthenticated) {
+      return Stream.value(<Map<String, dynamic>>[]);
+    }
+    final listsRef = _getListsCollection().orderBy('createdAt', descending: true);
+    return listsRef.snapshots().map((snapshot) => snapshot.docs.map((d) {
+          final data = d.data() as Map<String, dynamic>;
+          return {
+            'id': d.id,
+            'name': data['name'] as String? ?? 'Sin nombre',
+        'isDefault': data['isDefault'] as bool? ?? false,
+            'createdAt': data['createdAt'],
+            'updatedAt': data['updatedAt'],
+          };
+        }).toList());
+  }
 }
 
 

@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Por defecto, negar
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Documento de perfil del usuario autenticado
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+
+      // Subcolecciones del usuario (por ejemplo: lists, wishlist, etc.)
+      match /{sub=**}/{docId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
+

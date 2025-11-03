@@ -9,6 +9,7 @@ import 'lists_tab.dart';
 import 'settings_tab.dart';
 import '../widgets/profile_modal.dart';
 import '../providers/auth_provider.dart';
+import '../providers/wishlist_provider.dart';
 
 /// Main screen with tabs for Search and My Games
 /// Uses Material 3 design with a clean, modern interface
@@ -115,6 +116,64 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ),
       ),
       body: _buildBody(),
+      floatingActionButton: _currentIndex == 3
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final name = await showDialog<String>(
+                  context: context,
+                  builder: (context) {
+                    final controller = TextEditingController();
+                    return AlertDialog(
+                      title: const Text('Nueva Lista'),
+                      content: TextField(
+                        controller: controller,
+                        decoration: const InputDecoration(
+                          labelText: 'Nombre de la lista',
+                          hintText: 'Ej. JRPGs pendientes',
+                        ),
+                        autofocus: true,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => Navigator.of(context).pop(controller.text.trim()),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Cancelar'),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.of(context).pop(controller.text.trim()),
+                          child: const Text('Crear'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (name != null && name.isNotEmpty) {
+                  try {
+                    // usamos el mismo provider de Firestore existente
+                    final firestoreService = ref.read(firestoreServiceProvider);
+                    await firestoreService.createList(name);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Lista "$name" creada')),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error al crear lista: $e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  }
+                }
+              },
+              icon: const Icon(Icons.playlist_add),
+              label: const Text('Nueva Lista'),
+              backgroundColor: const Color(0xFF8B00FF),
+              foregroundColor: Colors.white,
+            )
+          : null,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(
@@ -136,7 +195,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   icon: const Icon(Icons.card_giftcard_outlined, size: 22),
                   tooltip: 'Wishlist',
                   style: IconButton.styleFrom(
-                    backgroundColor: Color(0xFFE52521),
+                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro (mismo que Settings)
                     foregroundColor: Colors.white,
                     side: const BorderSide(
                       color: Colors.white,
@@ -150,7 +209,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   icon: const Icon(Icons.search, size: 22),
                   tooltip: 'Search',
                   style: IconButton.styleFrom(
-                    backgroundColor: Color(0xFF00A65E),
+                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro (mismo que Settings)
                     foregroundColor: Colors.white,
                     side: const BorderSide(
                       color: Colors.white,
@@ -164,7 +223,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   icon: const Icon(Icons.home_outlined, size: 28),
                   tooltip: 'Home',
                   style: IconButton.styleFrom(
-                    backgroundColor: Colors.black,
+                    backgroundColor: const Color(0xFF6A1B9A), // Violeta más oscuro (mantiene home destacado)
                     foregroundColor: Colors.white,
                     fixedSize: const Size(56, 56),
                     side: const BorderSide(
@@ -179,7 +238,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   icon: const Icon(Icons.receipt_long_outlined, size: 22),
                   tooltip: 'Lists',
                   style: IconButton.styleFrom(
-                    backgroundColor: Color(0xFF2E6DB4),
+                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro (mismo que Settings)
                     foregroundColor: Colors.white,
                     side: const BorderSide(
                       color: Colors.white,
@@ -193,8 +252,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   icon: const Icon(Icons.settings_outlined, size: 22),
                   tooltip: 'Settings',
                   style: IconButton.styleFrom(
-                    backgroundColor: Color(0xFFF7D51D),
-                    foregroundColor: Colors.black,
+                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro
+                    foregroundColor: Colors.white,
                     side: const BorderSide(
                       color: Colors.white,
                       width: 2,

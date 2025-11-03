@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/game.dart';
+import '../providers/wishlist_provider.dart';
 
 /// Minimalist card widget for displaying game search results in a grid
 /// Shows only game image and title
-class GameSearchCard extends StatelessWidget {
+class GameSearchCard extends ConsumerWidget {
   final Game game;
   final VoidCallback onTap;
 
@@ -15,7 +17,8 @@ class GameSearchCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isInWishlistAsync = ref.watch(wishlistCheckerProvider(game.id));
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -43,36 +46,103 @@ class GameSearchCard extends StatelessWidget {
               flex: 3,
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: game.backgroundImage != null
-                    ? CachedNetworkImage(
-                        imageUrl: game.backgroundImage!,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          width: double.infinity,
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          child: const Center(
-                            child: CircularProgressIndicator(),
+                clipBehavior: Clip.hardEdge,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    game.backgroundImage != null
+                        ? CachedNetworkImage(
+                            imageUrl: game.backgroundImage!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: Icon(
+                                Icons.videogame_asset,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            child: Icon(
+                              Icons.videogame_asset,
+                              size: 40,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                            ),
                           ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          width: double.infinity,
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            Icons.videogame_asset,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                    Positioned(
+                    top: 8,
+                    right: 8,
+                    child: isInWishlistAsync.when(
+                      data: (isInWishlist) {
+                        final bg = isInWishlist ? const Color(0xFF6A1B9A) : const Color(0xFF8B00FF);
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: bg,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
                           ),
-                        ),
-                      )
-                    : Container(
-                        width: double.infinity,
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        child: Icon(
-                          Icons.videogame_asset,
-                          size: 40,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                        ),
-                      ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.card_giftcard_outlined,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              final wishlistNotifier = ref.read(wishlistNotifierProvider.notifier);
+                              try {
+                                if (isInWishlist) {
+                                  await wishlistNotifier.removeFromWishlist(game.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('${game.name} eliminado de la wishlist'),
+                                        duration: const Duration(seconds: 2),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  await wishlistNotifier.addToWishlist(game);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('${game.name} añadido a la wishlist'),
+                                        duration: const Duration(seconds: 2),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error al actualizar wishlist: $e'),
+                                      duration: const Duration(seconds: 3),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            padding: const EdgeInsets.all(8),
+                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                          ),
+                        );
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ),
+                  ],
+                ),
               ),
             ),
             // Game Title

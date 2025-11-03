@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Solo usuarios autenticados pueden acceder a cualquier recurso por defecto
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null && false;
+    }
+
+    // Fotos de perfil versionadas: profiles/{uid}/{filename}
+    match /profiles/{userId}/{fileName} {
+      allow read: if request.auth != null; // o true si quieres avatares públicos
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource != null
+        && request.resource.size < 5 * 1024 * 1024 // 5MB
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Compatibilidad con esquema antiguo: profiles/{uid}.jpg
+    match /profiles/{userId}.jpg {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+

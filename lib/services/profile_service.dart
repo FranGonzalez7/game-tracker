@@ -25,35 +25,68 @@ class ProfileService {
     return _firestore.collection('users').doc(userId);
   }
 
-  /// Obtiene la referencia al storage de la foto de perfil
-  Reference _getProfilePhotoRef() {
+  /// Obtiene la referencia base del directorio de fotos del usuario
+  Reference _getProfilePhotosDirRef() {
     final userId = currentUserId;
     if (userId == null) {
       throw Exception('Usuario no autenticado');
     }
-    return _storage.ref().child('profiles/$userId.jpg');
+    return _storage.ref().child('profiles/$userId');
   }
 
-  /// Sube una foto de perfil a Firebase Storage
+  /// Sube una foto de perfil a Firebase Storage con nombre versionado, añade metadatos
+  /// y elimina la foto anterior si existía.
   Future<String> uploadProfilePhoto(File photoFile) async {
     if (!isAuthenticated) {
       throw Exception('Usuario no autenticado');
     }
 
     try {
-      final ref = _getProfilePhotoRef();
-      await ref.putFile(photoFile);
-      final downloadUrl = await ref.getDownloadURL();
-      
-      // Actualizar la URL en el perfil del usuario en Firestore
+      // Construir ruta versionada
+      final photosDirRef = _getProfilePhotosDirRef();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final newPath = 'avatar_$timestamp.jpg';
+      final newPhotoRef = photosDirRef.child(newPath);
+
+      // Metadatos básicos
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        cacheControl: 'public, max-age=3600',
+      );
+
+      // Subir archivo
+      await newPhotoRef.putFile(photoFile, metadata);
+      final downloadUrl = await newPhotoRef.getDownloadURL();
+
+      // Intentar borrar la imagen anterior si existe
+      try {
+        final snap = await _getUserProfileRef().get();
+        if (snap.exists) {
+          final data = snap.data() as Map<String, dynamic>?;
+          final previousPath = data?['photoPath'] as String?;
+          if (previousPath != null && previousPath.isNotEmpty) {
+            await photosDirRef.child(previousPath).delete();
+          } else {
+            // Compatibilidad con versión anterior (single file en raíz)
+            final legacyRef = _storage.ref().child('profiles/${currentUserId}.jpg');
+            await legacyRef.delete();
+          }
+        }
+      } catch (_) {
+        // Ignorar fallos al borrar; no es crítico
+      }
+
+      // Guardar URL y ruta en Firestore
       await _getUserProfileRef().set({
         'photoUrl': downloadUrl,
+        'photoPath': newPath,
+        'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-      
+
       // Actualizar la URL en Firebase Auth
       await _auth.currentUser?.updatePhotoURL(downloadUrl);
       await _auth.currentUser?.reload();
-      
+
       return downloadUrl;
     } catch (e) {
       throw Exception('Error al subir foto de perfil: $e');
