@@ -188,6 +188,79 @@ class FirestoreService {
           };
         }).toList());
   }
+
+  /// Obtiene la referencia a la colección de juegos de una lista
+  CollectionReference _getListGamesCollection(String listId) {
+    final userId = currentUserId;
+    if (userId == null) {
+      throw Exception('Usuario no autenticado');
+    }
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('lists')
+        .doc(listId)
+        .collection('games');
+  }
+
+  /// Añade un juego a una lista
+  Future<void> addGameToList(String listId, Game game) async {
+    if (!isAuthenticated) {
+      throw Exception('Usuario no autenticado');
+    }
+
+    final gamesRef = _getListGamesCollection(listId);
+    
+    await gamesRef.doc(game.id.toString()).set({
+      'gameId': game.id,
+      'name': game.name,
+      'backgroundImage': game.backgroundImage,
+      'rating': game.rating,
+      'released': game.released,
+      'platforms': game.platforms,
+      'addedAt': FieldValue.serverTimestamp(),
+    });
+
+    // Actualizar updatedAt de la lista
+    final listRef = _getListsCollection().doc(listId);
+    await listRef.update({'updatedAt': FieldValue.serverTimestamp()});
+  }
+
+  /// Obtiene los juegos de una lista (stream)
+  Stream<List<Game>> getListGamesStream(String listId) {
+    if (!isAuthenticated) {
+      return Stream.value([]);
+    }
+
+    final gamesRef = _getListGamesCollection(listId);
+    
+    return gamesRef.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return Game(
+          id: data['gameId'] as int,
+          name: data['name'] as String,
+          backgroundImage: data['backgroundImage'] as String?,
+          rating: (data['rating'] as num?)?.toDouble(),
+          released: data['released'] as String?,
+          platforms: data['platforms'] != null
+              ? List<String>.from(data['platforms'] as List)
+              : null,
+        );
+      }).toList();
+    });
+  }
+
+  /// Verifica si un juego está en una lista
+  Future<bool> isGameInList(String listId, int gameId) async {
+    if (!isAuthenticated) {
+      return false;
+    }
+
+    final gamesRef = _getListGamesCollection(listId);
+    final doc = await gamesRef.doc(gameId.toString()).get();
+    return doc.exists;
+  }
 }
 
 

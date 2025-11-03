@@ -26,7 +26,7 @@ class GameSearchCard extends ConsumerWidget {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF8B00FF), // Violeta potente
+            color: const Color(0xFF137FEC), // Azul
             width: 2,
           ),
           boxShadow: [
@@ -131,7 +131,7 @@ class GameSearchCard extends ConsumerWidget {
                                 : BoxDecoration(
                                     gradient: RadialGradient(
                                       colors: [
-                                        const Color(0xFF8B00FF).withOpacity(0.85),
+                                        const Color(0xFF137FEC).withOpacity(0.85),
                                         const Color(0x00000000),
                                       ],
                                       radius: 0.8,
@@ -203,7 +203,7 @@ class GameWishlistCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF8B00FF), // Violeta potente
+            color: const Color(0xFF137FEC), // Azul
             width: 2,
           ),
           boxShadow: [
@@ -214,42 +214,46 @@ class GameWishlistCard extends StatelessWidget {
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: game.backgroundImage != null
-              ? CachedNetworkImage(
-                  imageUrl: game.backgroundImage!,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: game.backgroundImage != null
+                  ? CachedNetworkImage(
+                      imageUrl: game.backgroundImage!,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        child: Icon(
+                          Icons.videogame_asset,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.videogame_asset,
+                        size: 40,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                      ),
                     ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.videogame_asset,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                    ),
-                  ),
-                )
-              : Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.videogame_asset,
-                    size: 40,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                  ),
-                ),
+            ),
+          ],
         ),
       ),
     );
@@ -277,7 +281,7 @@ class GameWishlistListCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF8B00FF),
+            color: const Color(0xFF137FEC),
             width: 2,
           ),
           boxShadow: [

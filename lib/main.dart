@@ -51,14 +51,70 @@ class GameTrackerApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeProvider);
 
+    // Paleta de colores basada en la captura de Stitch
+    // backgroundColor: #101922 (fondo principal)
+    // fondo de tarjetas (modo lista): #17212F
+    // fondo barra búsqueda: #233648
+    // accentButton: #137FEC (azul)
+    
     final lightColorScheme = ColorScheme.fromSeed(
-      seedColor: Colors.purple,
+      seedColor: const Color(0xFF137FEC), // Azul
       brightness: Brightness.light,
     );
 
-    final darkColorScheme = ColorScheme.fromSeed(
-      seedColor: Colors.purple,
+    // ColorScheme personalizado para modo oscuro basado en la captura
+    final darkColorScheme = ColorScheme(
       brightness: Brightness.dark,
+      // Color primario (azul)
+      primary: const Color(0xFF137FEC),
+      onPrimary: Colors.white,
+      primaryContainer: const Color(0xFF137FEC).withOpacity(0.2),
+      onPrimaryContainer: const Color(0xFF137FEC),
+      
+      // Color secundario (variación del azul)
+      secondary: const Color(0xFF137FEC).withOpacity(0.8),
+      onSecondary: Colors.white,
+      secondaryContainer: const Color(0xFF137FEC).withOpacity(0.15),
+      onSecondaryContainer: const Color(0xFF137FEC),
+      
+      // Color terciario
+      tertiary: const Color(0xFF4CAF50), // Verde para estados de éxito
+      onTertiary: Colors.white,
+      tertiaryContainer: const Color(0xFF4CAF50).withOpacity(0.2),
+      onTertiaryContainer: const Color(0xFF4CAF50),
+      
+      // Colores de error
+      error: Colors.red,
+      onError: Colors.white,
+      errorContainer: Colors.red.withOpacity(0.2),
+      onErrorContainer: Colors.red,
+      
+      // Fondo principal (#101922)
+      surface: const Color(0xFF101922),
+      onSurface: Colors.white,
+      
+      // Superficie elevada - fondo de tarjetas (#17212F)
+      surfaceContainerHighest: const Color(0xFF17212F),
+      surfaceContainerHigh: const Color(0xFF17212F),
+      surfaceContainer: const Color(0xFF17212F),
+      surfaceContainerLow: const Color(0xFF141D2A),
+      surfaceContainerLowest: const Color(0xFF101922),
+      onSurfaceVariant: Colors.white.withOpacity(0.7), // Gris claro para texto secundario
+      
+      // Fondo
+      background: const Color(0xFF101922),
+      onBackground: Colors.white,
+      
+      // Outline
+      outline: Colors.white.withOpacity(0.2),
+      outlineVariant: Colors.white.withOpacity(0.1),
+      
+      // Shadow y scrim
+      shadow: Colors.black,
+      scrim: Colors.black,
+      inverseSurface: Colors.white,
+      onInverseSurface: const Color(0xFF101922),
+      inversePrimary: const Color(0xFF137FEC),
     );
 
     return MaterialApp(
@@ -110,25 +166,53 @@ class GameTrackerApp extends ConsumerWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: darkColorScheme,
+        scaffoldBackgroundColor: darkColorScheme.background,
         cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
+          color: darkColorScheme.surfaceContainerHighest,
+          surfaceTintColor: Colors.transparent,
         ),
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           elevation: 0,
           centerTitle: true,
           backgroundColor: Colors.transparent,
+          foregroundColor: darkColorScheme.onBackground,
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            backgroundColor: darkColorScheme.primary,
+            foregroundColor: darkColorScheme.onPrimary,
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            side: BorderSide(
+              color: darkColorScheme.primary,
+              width: 2,
+            ),
+            foregroundColor: darkColorScheme.primary,
+          ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
+          fillColor: const Color(0xFF233648), // fondo barra búsqueda
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
-          enabledBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
@@ -138,6 +222,32 @@ class GameTrackerApp extends ConsumerWidget {
               color: darkColorScheme.primary,
             ),
           ),
+          hintStyle: TextStyle(
+            color: darkColorScheme.onSurfaceVariant,
+          ),
+          labelStyle: TextStyle(
+            color: darkColorScheme.onSurfaceVariant,
+          ),
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: Colors.transparent,
+          selectedColor: darkColorScheme.primary,
+          disabledColor: Colors.transparent,
+          labelStyle: TextStyle(
+            color: darkColorScheme.onBackground,
+          ),
+          secondaryLabelStyle: TextStyle(
+            color: darkColorScheme.onPrimary,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide.none,
+          ),
+        ),
+        listTileTheme: ListTileThemeData(
+          textColor: darkColorScheme.onBackground,
+          iconColor: darkColorScheme.primary,
         ),
       ),
       home: const AuthWrapper(),

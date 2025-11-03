@@ -72,7 +72,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF8B00FF),
+                      color: const Color(0xFF137FEC),
                       width: 2,
                     ),
                   ),
@@ -108,10 +108,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(3),
+          preferredSize: const Size.fromHeight(1),
           child: Container(
             height: 3,
-            color: const Color(0xFF8B00FF), // Violeta potente
+            color: const Color(0xFF0A4A7A), // Azul oscuro
           ),
         ),
       ),
@@ -170,7 +170,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               },
               icon: const Icon(Icons.playlist_add),
               label: const Text('Nueva Lista'),
-              backgroundColor: const Color(0xFF8B00FF),
+              backgroundColor: const Color(0xFF137FEC),
               foregroundColor: Colors.white,
             )
           : null,
@@ -178,7 +178,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         decoration: const BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Color(0xFF8B00FF), // Violeta potente
+              color: Color(0xFF0A4A7A), // Azul oscuro
               width: 3,
             ),
           ),
@@ -190,79 +190,76 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                IconButton.filled(
-                  onPressed: () => setState(() => _currentIndex = 0),
-                  icon: const Icon(Icons.card_giftcard_outlined, size: 22),
-                  tooltip: 'Wishlist',
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro (mismo que Settings)
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
+                _BottomNavIcon(
+                  icon: Icons.sports_esports,
                   isSelected: _currentIndex == 0,
+                  onTap: () => setState(() => _currentIndex = 0),
+                  tooltip: 'Wishlist',
                 ),
-                IconButton.filled(
-                  onPressed: () => setState(() => _currentIndex = 1),
-                  icon: const Icon(Icons.search, size: 22),
-                  tooltip: 'Search',
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro (mismo que Settings)
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
+                _BottomNavIcon(
+                  icon: Icons.search,
                   isSelected: _currentIndex == 1,
+                  onTap: () => setState(() => _currentIndex = 1),
+                  tooltip: 'Search',
                 ),
-                IconButton.filled(
-                  onPressed: () => setState(() => _currentIndex = 2),
-                  icon: const Icon(Icons.home_outlined, size: 28),
-                  tooltip: 'Home',
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A1B9A), // Violeta más oscuro (mantiene home destacado)
-                    foregroundColor: Colors.white,
-                    fixedSize: const Size(56, 56),
-                    side: const BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
+                _BottomNavIcon(
+                  icon: Icons.home_outlined,
                   isSelected: _currentIndex == 2,
+                  onTap: () => setState(() => _currentIndex = 2),
+                  tooltip: 'Home',
                 ),
-                IconButton.filled(
-                  onPressed: () => setState(() => _currentIndex = 3),
-                  icon: const Icon(Icons.receipt_long_outlined, size: 22),
-                  tooltip: 'Lists',
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro (mismo que Settings)
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
+                _BottomNavIcon(
+                  icon: Icons.receipt_long_outlined,
                   isSelected: _currentIndex == 3,
+                  onTap: () => setState(() => _currentIndex = 3),
+                  tooltip: 'Lists',
                 ),
-                IconButton.filled(
-                  onPressed: () => setState(() => _currentIndex = 4),
-                  icon: const Icon(Icons.settings_outlined, size: 22),
-                  tooltip: 'Settings',
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFAB47BC), // Violeta medio-claro
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                  ),
+                _BottomNavIcon(
+                  icon: Icons.settings_outlined,
                   isSelected: _currentIndex == 4,
+                  onTap: () => setState(() => _currentIndex = 4),
+                  tooltip: 'Settings',
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Widget personalizado para los iconos de la bottom navigation bar
+/// Sin círculo de fondo, icono blanco por defecto, amplificado y celeste cuando está seleccionado
+class _BottomNavIcon extends StatelessWidget {
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final String tooltip;
+
+  const _BottomNavIcon({
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+    required this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Tooltip(
+        message: tooltip,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: Icon(
+            icon,
+            size: isSelected ? 34 : 26,
+            color: isSelected 
+                ? const Color(0xFF5FD0FF) // Celeste potente cuando está seleccionado
+                : Colors.white.withOpacity(0.7), // Blanco semi-transparente cuando no está seleccionado
           ),
         ),
       ),

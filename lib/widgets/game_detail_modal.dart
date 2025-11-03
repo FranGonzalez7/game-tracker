@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/game.dart';
 import '../providers/wishlist_provider.dart';
+import 'add_to_list_modal.dart';
 
 /// Modal widget that displays detailed information about a game
 /// Appears centered on the screen as a dialog
@@ -66,7 +67,7 @@ class _GameDetailModalState extends ConsumerState<GameDetailModal> {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: const Color(0xFF8B00FF), // Violeta potente
+            color: const Color(0xFF137FEC), // Azul
             width: 3,
           ),
         ),
@@ -235,7 +236,7 @@ class _GameDetailContent extends ConsumerWidget {
                                   : BoxDecoration(
                                       gradient: RadialGradient(
                                         colors: [
-                                          const Color(0xFF8B00FF).withOpacity(0.85),
+                                          const Color(0xFF137FEC).withOpacity(0.85),
                                           const Color(0x00000000),
                                         ],
                                         radius: 0.8,
@@ -301,17 +302,17 @@ class _GameDetailContent extends ConsumerWidget {
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF8B00FF).withOpacity(0.1),
+                          color: const Color(0xFF137FEC).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFF8B00FF).withOpacity(0.3),
+                            color: const Color(0xFF137FEC).withOpacity(0.3),
                             width: 1,
                           ),
                         ),
                         child: Text(
                           platform,
                           style: TextStyle(
-                            color: const Color(0xFF8B00FF),
+                            color: const Color(0xFF137FEC),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -320,6 +321,36 @@ class _GameDetailContent extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
                 ],
+
+                // Add to Lists Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      AddToListModal.show(context, game);
+                    },
+                    icon: const Icon(Icons.playlist_add),
+                    label: const Text(
+                      'Añadir a Listas',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: const BorderSide(
+                        color: const Color(0xFF137FEC),
+                        width: 2,
+                      ),
+                      foregroundColor: const Color(0xFF137FEC),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
 
                 // Close Button
                 SizedBox(
@@ -331,7 +362,7 @@ class _GameDetailContent extends ConsumerWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      backgroundColor: const Color(0xFF8B00FF),
+                      backgroundColor: const Color(0xFF137FEC),
                     ),
                     child: const Text(
                       'Cerrar',

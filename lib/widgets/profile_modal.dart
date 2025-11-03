@@ -236,7 +236,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: const Color(0xFF8B00FF),
+            color: const Color(0xFF137FEC),
             width: 3,
           ),
         ),
@@ -255,7 +255,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF8B00FF).withOpacity(0.1),
+                    color: const Color(0xFF137FEC).withOpacity(0.1),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(24),
                     ),
@@ -267,11 +267,11 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                           'Mi Perfil',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF8B00FF),
+                                color: const Color(0xFF137FEC),
                               ) ?? const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 24,
-                                color: Color(0xFF8B00FF),
+                                color: const Color(0xFF137FEC),
                               ),
                         ),
                       ),
@@ -298,7 +298,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(0xFF8B00FF),
+                                  color: const Color(0xFF137FEC),
                                   width: 3,
                                 ),
                               ),
@@ -338,7 +338,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                                 width: 36,
                                 height: 36,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF8B00FF),
+                                  color: const Color(0xFF137FEC),
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: Theme.of(context).colorScheme.surface,
@@ -401,7 +401,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                             onPressed: _isLoading ? null : _saveProfile,
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              backgroundColor: const Color(0xFF8B00FF),
+                              backgroundColor: const Color(0xFF137FEC),
                             ),
                             child: _isLoading
                                 ? const SizedBox(
