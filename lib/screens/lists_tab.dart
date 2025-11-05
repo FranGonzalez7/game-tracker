@@ -23,7 +23,7 @@ class ListsTab extends ConsumerWidget {
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(4),
           itemBuilder: (context, index) {
             final list = lists[index];
             final listId = list['id'] as String;
@@ -40,30 +40,85 @@ class ListsTab extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
                 side: const BorderSide(color: Color(0xFF137FEC), width: 2),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text(name),
-                    leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      // TODO: navegar al detalle de la lista
-                    },
-                  ),
-                  // Galería de imágenes de juegos
-                  _ListGamesPreview(listId: listId),
-                ],
+              child: InkWell(
+                onTap: () {
+                  // TODO: navegar al detalle de la lista
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _ListHeader(
+                      name: name,
+                      leadingIcon: leadingIcon,
+                      listId: listId,
+                    ),
+                    // Galería de imágenes de juegos
+                    _ListGamesPreview(listId: listId),
+                  ],
+                ),
               ),
             );
           },
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, __) => const SizedBox(height: 4),
           itemCount: lists.length,
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: Text('Error al cargar listas: $e'),
+      ),
+    );
+  }
+}
+
+/// Widget que muestra el encabezado de la lista con título y subtítulo del conteo
+class _ListHeader extends ConsumerWidget {
+  final String name;
+  final IconData leadingIcon;
+  final String listId;
+
+  const _ListHeader({
+    required this.name,
+    required this.leadingIcon,
+    required this.listId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gamesAsync = ref.watch(listGamesStreamProvider(listId));
+
+    return gamesAsync.when(
+      data: (games) {
+        final gameCount = games.length;
+        final subtitle = gameCount == 1 ? '1 juego' : '$gameCount juegos';
+        
+        return ListTile(
+          title: Text(name),
+          subtitle: Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
+          trailing: const Icon(Icons.chevron_right),
+          mouseCursor: SystemMouseCursors.basic,
+        );
+      },
+      loading: () => ListTile(
+        title: Text(name),
+        leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
+        trailing: const Icon(Icons.chevron_right),
+        mouseCursor: SystemMouseCursors.basic,
+      ),
+      error: (_, __) => ListTile(
+        title: Text(name),
+        leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
+        trailing: const Icon(Icons.chevron_right),
+        mouseCursor: SystemMouseCursors.basic,
       ),
     );
   }
@@ -85,31 +140,29 @@ class _ListGamesPreview extends ConsumerWidget {
           return const SizedBox.shrink();
         }
 
-        // Mostrar máximo 6 imágenes
-        final gamesToShow = games.take(6).toList();
-        final remainingCount = games.length > 6 ? games.length - 6 : 0;
-
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: SizedBox(
-            height: 80,
-            child: Row(
-              children: [
-                ...gamesToShow.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final game = entry.value;
-                  final isLast = index == gamesToShow.length - 1 && remainingCount == 0;
+        return Transform.translate(
+          offset: const Offset(0, -8),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 2),
+            child: SizedBox(
+              height: 64,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: games.length,
+                itemBuilder: (context, index) {
+                  final game = games[index];
+                  final isLast = index == games.length - 1;
                   
                   return Padding(
-                    padding: EdgeInsets.only(right: isLast ? 0 : 8),
+                    padding: EdgeInsets.only(right: isLast ? 0 : 4),
                     child: _GamePreviewImage(
                       imageUrl: game.backgroundImage,
-                      isOverlay: index == gamesToShow.length - 1 && remainingCount > 0,
-                      remainingCount: remainingCount,
+                      isOverlay: false,
+                      remainingCount: 0,
                     ),
                   );
-                }).toList(),
-              ],
+                },
+              ),
             ),
           ),
         );
@@ -137,8 +190,8 @@ class _GamePreviewImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        width: 80,
-        height: 80,
+        width: 64,
+        height: 64,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
@@ -164,7 +217,7 @@ class _GamePreviewImage extends StatelessWidget {
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: Icon(
                     Icons.videogame_asset,
-                    size: 24,
+                    size: 20,
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                   ),
                 ),
@@ -172,7 +225,7 @@ class _GamePreviewImage extends StatelessWidget {
             else
               Icon(
                 Icons.videogame_asset,
-                size: 24,
+                size: 20,
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
               ),
             if (isOverlay && remainingCount > 0)

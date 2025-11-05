@@ -7,14 +7,24 @@ class HomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Expanded(
-          child: Center(
-            child: Text('Home'),
+        // Contenedor superior debajo de la AppBar
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFF137FEC), // Azul
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
           ),
         ),
-        // Botones cerca del BottomAppBar
+        // Botones en el medio
         Padding(
-          padding: const EdgeInsets.only(bottom: 10.0, left: 16.0, right: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             children: [
               Expanded(
@@ -47,6 +57,21 @@ class HomeTab extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+        // Contenedor inferior sobre el BottomAppBar
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFF137FEC), // Azul
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
           ),
         ),
       ],
