@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Configuration file for API keys and endpoints
 /// 
