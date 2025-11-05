@@ -40,6 +40,9 @@ dependencies:
   
   # Image picker
   image_picker: ^1.0.7
+  
+  # Environment variables
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -54,3 +57,4 @@ flutter:
   # Assets
   assets:
     - assets/
+    - .env

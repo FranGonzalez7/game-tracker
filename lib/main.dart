@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'services/storage_service.dart';
 import 'screens/main_screen.dart';
@@ -12,6 +13,16 @@ import 'providers/auth_provider.dart';
 /// Initializes Firebase, Hive storage and sets up Material 3 theme
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables from .env file
+  try {
+    await dotenv.load(fileName: ".env");
+    debugPrint('Variables de entorno cargadas correctamente');
+  } catch (e) {
+    debugPrint('Error al cargar .env: $e');
+    debugPrint('Asegúrate de que el archivo .env existe en la raíz del proyecto');
+    // Continuar ejecutando pero mostrar error si se intenta usar la API key
+  }
   
   // Initialize Firebase with platform-specific options
   // These options are generated automatically by FlutterFire CLI

@@ -1,11 +1,26 @@
+import 'package:flutter_dotenv/flutter_dotenv';
+
 /// Configuration file for API keys and endpoints
 /// 
-/// IMPORTANT: Add your RAWG.io API key here
+/// IMPORTANT: The API key is loaded from .env file
+/// Copy .env.example to .env and add your RAWG.io API key
 /// You can get a free API key at: https://rawg.io/apidocs
 class ApiConfig {
-  // TODO: Replace with your actual RAWG.io API key
-  static const String rawgApiKey = '0b98eaa93e43454193320ea18051ea79';
   static const String baseUrl = 'https://api.rawg.io/api';
+  
+  /// Gets the RAWG API key from environment variables
+  /// Throws an exception if the key is not found
+  static String get rawgApiKey {
+    final apiKey = dotenv.env['RAWG_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) {
+      throw Exception(
+        'RAWG_API_KEY not found in .env file. '
+        'Please create a .env file with your API key. '
+        'See .env.example for reference.'
+      );
+    }
+    return apiKey;
+  }
   
   /// Returns the full API URL with key
   static String getUrl(String endpoint) {
