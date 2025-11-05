@@ -15,6 +15,7 @@ class SearchTab extends ConsumerStatefulWidget {
 
 class _SearchTabState extends ConsumerState<SearchTab> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   String _lastQuery = '';
 
   @override
@@ -23,17 +24,27 @@ class _SearchTabState extends ConsumerState<SearchTab> {
     _searchController.addListener(() {
       setState(() {}); // Rebuild to update suffix icon
     });
+    
+    // Cerrar el teclado si está abierto después de hot restart
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_focusNode.hasFocus) {
+        _focusNode.unfocus();
+      }
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   void _performSearch(String query) {
     if (query != _lastQuery) {
       _lastQuery = query;
+      // Limpiar filtros cuando cambia la búsqueda
+      ref.read(searchFiltersProvider.notifier).state = const SearchFilters();
       ref.read(unfilteredGameSearchProvider.notifier).searchGames(query);
     }
   }
@@ -49,6 +60,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
           padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
           child: TextField(
             controller: _searchController,
+            focusNode: _focusNode,
             decoration: InputDecoration(
               hintText: 'Search for games...',
               hintStyle: TextStyle(
@@ -65,6 +77,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                         _searchController.clear();
                         _lastQuery = '';
                         ref.read(unfilteredGameSearchProvider.notifier).clearSearch();
+                        ref.read(searchFiltersProvider.notifier).state = const SearchFilters();
                       },
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     )
@@ -74,15 +87,63 @@ class _SearchTabState extends ConsumerState<SearchTab> {
             onChanged: _performSearch,
             onSubmitted: (q) {
               _performSearch(q);
-              FocusScope.of(context).unfocus();
+              _focusNode.unfocus();
             },
+          ),
+        ),
+
+        // Filter Bar
+        Container(
+          height: 40,
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                width: 1,
+              ),
+              bottom: BorderSide(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.tune,
+                  size: 20,
+                  color: const Color(0xFF137FEC),
+                ),
+                const SizedBox(width: 12),
+                _FilterChip(
+                  label: 'Plataforma',
+                  onTap: () {
+                    final searchResults = ref.read(unfilteredGameSearchProvider);
+                    searchResults.whenData((games) {
+                      if (games.isNotEmpty) {
+                        _PlatformFilterModal.show(context, ref);
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(width: 8),
+                _FilterChip(
+                  label: 'Fecha',
+                  onTap: () {
+                    // TODO: Implementar filtro de fecha
+                  },
+                ),
+              ],
+            ),
           ),
         ),
 
         // Search Results
         Expanded(
           child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
+            onTap: () => _focusNode.unfocus(),
             behavior: HitTestBehavior.translucent,
             child: searchResults.when(
             data: (games) {
@@ -142,7 +203,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                   return GameSearchCard(
                     game: game,
                     onTap: () async {
-                      FocusScope.of(context).unfocus();
+                      _focusNode.unfocus();
                       await GameDetailModal.show(
                         context,
                         game,
@@ -210,6 +271,248 @@ class _SearchTabState extends ConsumerState<SearchTab> {
         ),
         ),
       ],
+    );
+  }
+}
+
+/// Widget para los chips de filtrado
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: const Color(0xFF137FEC),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF137FEC),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal para filtrar por plataformas
+class _PlatformFilterModal extends ConsumerStatefulWidget {
+  const _PlatformFilterModal();
+
+  static void show(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _PlatformFilterModal(),
+    );
+  }
+
+  @override
+  ConsumerState<_PlatformFilterModal> createState() => _PlatformFilterModalState();
+}
+
+class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
+  late Set<String> _selectedPlatforms;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentFilters = ref.read(searchFiltersProvider);
+    _selectedPlatforms = currentFilters.platforms?.toSet() ?? {};
+  }
+
+  void _togglePlatform(String platform) {
+    setState(() {
+      if (_selectedPlatforms.contains(platform)) {
+        _selectedPlatforms.remove(platform);
+      } else {
+        _selectedPlatforms.add(platform);
+      }
+    });
+  }
+
+  void _applyFilters() {
+    // Actualizar el provider con las plataformas seleccionadas
+    final currentFilters = ref.read(searchFiltersProvider);
+    ref.read(searchFiltersProvider.notifier).state = currentFilters.copyWith(
+      platforms: _selectedPlatforms.isEmpty ? null : _selectedPlatforms.toList(),
+      clearPlatforms: _selectedPlatforms.isEmpty,
+    );
+    Navigator.of(context).pop();
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _selectedPlatforms.clear();
+    });
+    // Actualizar el provider también para que se refleje inmediatamente
+    final currentFilters = ref.read(searchFiltersProvider);
+    ref.read(searchFiltersProvider.notifier).state = currentFilters.copyWith(
+      clearPlatforms: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final availablePlatforms = ref.watch(availablePlatformsProvider);
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // Limpiar selecciones que ya no están disponibles (solo una vez al montar)
+    if (_selectedPlatforms.isNotEmpty && availablePlatforms.isNotEmpty) {
+      final toRemove = _selectedPlatforms.where((p) => !availablePlatforms.contains(p)).toList();
+      if (toRemove.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _selectedPlatforms.removeAll(toRemove);
+            });
+          }
+        });
+      }
+    }
+
+    return Container(
+      height: screenHeight * 0.8,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.tune,
+                  color: Color(0xFF137FEC),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Plataforma',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (_selectedPlatforms.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.clear_all),
+                    color: const Color(0xFF137FEC),
+                    tooltip: 'Limpiar',
+                    onPressed: _clearFilters,
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          // Platforms List
+          Expanded(
+            child: availablePlatforms.isEmpty
+                ? const Center(
+                    child: Text('No hay plataformas disponibles en los resultados'),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: availablePlatforms.length,
+                    itemBuilder: (context, index) {
+                      final platform = availablePlatforms[index];
+                      final isSelected = _selectedPlatforms.contains(platform);
+                      
+                      return CheckboxListTile(
+                        value: isSelected,
+                        onChanged: (_) => _togglePlatform(platform),
+                        title: Text(platform),
+                        activeColor: const Color(0xFF137FEC),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      );
+                    },
+                  ),
+          ),
+          // Footer buttons
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: Color(0xFF137FEC)),
+                    ),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: Color(0xFF137FEC),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _applyFilters,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: const Color(0xFF137FEC),
+                    ),
+                    child: const Text(
+                      'Aplicar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

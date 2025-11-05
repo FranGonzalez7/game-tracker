@@ -102,7 +102,7 @@ class _ListHeader extends ConsumerWidget {
               fontStyle: FontStyle.italic,
             ),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
           trailing: const Icon(Icons.chevron_right),
           mouseCursor: SystemMouseCursors.basic,

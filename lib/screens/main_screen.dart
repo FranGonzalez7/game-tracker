@@ -213,6 +213,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   isSelected: _currentIndex == 3,
                   onTap: () => setState(() => _currentIndex = 3),
                   tooltip: 'Lists',
+                  imagePath: 'assets/coleccion.png',
                 ),
                 _BottomNavIcon(
                   icon: Icons.settings_outlined,
@@ -236,12 +237,14 @@ class _BottomNavIcon extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final String tooltip;
+  final String? imagePath;
 
   const _BottomNavIcon({
     required this.icon,
     required this.isSelected,
     required this.onTap,
     required this.tooltip,
+    this.imagePath,
   });
 
   @override
@@ -254,13 +257,23 @@ class _BottomNavIcon extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
-          child: Icon(
-            icon,
-            size: isSelected ? 34 : 26,
-            color: isSelected 
-                ? const Color(0xFF5FD0FF) // Celeste potente cuando está seleccionado
-                : Colors.white.withOpacity(0.7), // Blanco semi-transparente cuando no está seleccionado
-          ),
+          child: imagePath != null
+              ? Image.asset(
+                  imagePath!,
+                  width: isSelected ? 34 : 26,
+                  height: isSelected ? 34 : 26,
+                  color: isSelected 
+                      ? const Color(0xFF5FD0FF) // Celeste potente cuando está seleccionado
+                      : Colors.white.withOpacity(0.7), // Blanco semi-transparente cuando no está seleccionado
+                  colorBlendMode: BlendMode.srcIn,
+                )
+              : Icon(
+                  icon,
+                  size: isSelected ? 34 : 26,
+                  color: isSelected 
+                      ? const Color(0xFF5FD0FF) // Celeste potente cuando está seleccionado
+                      : Colors.white.withOpacity(0.7), // Blanco semi-transparente cuando no está seleccionado
+                ),
         ),
       ),
     );

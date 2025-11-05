@@ -74,5 +74,39 @@ class GameService {
       return null;
     }
   }
+
+  /// Gets the list of available platforms from the RAWG API
+  /// Returns a list of platform names
+  Future<List<String>> getPlatforms() async {
+    try {
+      final url = '${ApiConfig.getUrl('/platforms')}&page_size=50';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        
+        if (data.containsKey('results') && data['results'] != null) {
+          final results = data['results'] as List;
+          
+          final platforms = <String>[];
+          for (var item in results) {
+            try {
+              if (item is Map<String, dynamic> && item['name'] != null) {
+                platforms.add(item['name'] as String);
+              }
+            } catch (e) {
+              print('Error parsing platform: $e');
+            }
+          }
+          
+          return platforms..sort();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching platforms: $e');
+      return [];
+    }
+  }
 }
 
