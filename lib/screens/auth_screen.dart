@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../providers/auth_provider.dart';
 
 /// Pantalla de autenticación con pestañas para Login y Registro
@@ -38,8 +37,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               padding: const EdgeInsets.all(32.0),
               child: Column(
                 children: [
-                  SvgPicture.asset(
-                    'assets/logo_snes_buttons.svg',
+                  Image.asset(
+                    'assets/mando_snes.png',
                     height: 160,
                   ),
                   const SizedBox(height: 16),
