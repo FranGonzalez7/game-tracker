@@ -320,10 +320,8 @@ class _PlatformFilterModal extends ConsumerStatefulWidget {
   const _PlatformFilterModal();
 
   static void show(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => const _PlatformFilterModal(),
     );
   }
@@ -376,7 +374,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
   @override
   Widget build(BuildContext context) {
     final availablePlatforms = ref.watch(availablePlatformsProvider);
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenSize = MediaQuery.of(context).size;
     
     // Limpiar selecciones que ya no están disponibles (solo una vez al montar)
     if (_selectedPlatforms.isNotEmpty && availablePlatforms.isNotEmpty) {
@@ -392,12 +390,17 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
       }
     }
 
-    return Container(
-      height: screenHeight * 0.8,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
       ),
+      child: Container(
+        width: screenSize.width * 0.85,
+        height: screenSize.height * 0.84, // 20% más grande (0.7 * 1.2 = 0.84)
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+        ),
       child: Column(
         children: [
           // Header
@@ -419,7 +422,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Text(
-                    'Plataforma',
+                    'Plataformas',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -446,20 +449,41 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
                 ? const Center(
                     child: Text('No hay plataformas disponibles en los resultados'),
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                : GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 4,
+                      childAspectRatio: 2.8,
+                    ),
                     itemCount: availablePlatforms.length,
                     itemBuilder: (context, index) {
                       final platform = availablePlatforms[index];
                       final isSelected = _selectedPlatforms.contains(platform);
                       
-                      return CheckboxListTile(
-                        value: isSelected,
-                        onChanged: (_) => _togglePlatform(platform),
-                        title: Text(platform),
-                        activeColor: const Color(0xFF137FEC),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      return Row(
+                        children: [
+                          Checkbox(
+                            value: isSelected,
+                            onChanged: (_) => _togglePlatform(platform),
+                            activeColor: const Color(0xFF137FEC),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _togglePlatform(platform),
+                              child: Text(
+                                platform,
+                                style: const TextStyle(fontSize: 13),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -512,6 +536,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
