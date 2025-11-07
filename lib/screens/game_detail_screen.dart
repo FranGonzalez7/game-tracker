@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/saved_game.dart';
 
-/// Detail screen for viewing and editing a saved game
-/// Allows modification of dates, rating, and notes
+/// 📝 Pantalla de detalle para ver y editar un juego guardado
+/// ✏️ Permite cambiar fechas, valoración personal y notas (todavía es básica)
 class GameDetailScreen extends StatefulWidget {
   final SavedGame game;
 
@@ -97,7 +97,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Game Image
+          // 🖼️ Imagen del juego (si existe)
             if (widget.game.backgroundImage != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
@@ -126,7 +126,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
             const SizedBox(height: 24),
 
-            // Start Date
+            // 🕒 Fecha de inicio
             Card(
               child: ListTile(
                 leading: Icon(
@@ -157,7 +157,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
             const SizedBox(height: 12),
 
-            // Completion Date
+            // 🏁 Fecha de finalización
             Card(
               child: ListTile(
                 leading: Icon(
@@ -188,7 +188,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
             const SizedBox(height: 24),
 
-            // Personal Rating
+            // ⭐ Valoración personal
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -238,7 +238,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
             const SizedBox(height: 24),
 
-            // Notes
+            // 🗒️ Notas personales
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -275,7 +275,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
             const SizedBox(height: 24),
 
-            // Save Button
+            // 💾 Botón para guardar los cambios
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(

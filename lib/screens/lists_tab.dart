@@ -42,7 +42,7 @@ class ListsTab extends ConsumerWidget {
               ),
               child: InkWell(
                 onTap: () {
-                  // TODO: navegar al detalle de la lista
+                  // TODO 🧭: navegar al detalle de la lista (aún no defino esa pantalla)
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Column(
@@ -53,7 +53,7 @@ class ListsTab extends ConsumerWidget {
                       leadingIcon: leadingIcon,
                       listId: listId,
                     ),
-                    // Galería de imágenes de juegos
+                    // 🖼️ Galería mini de los juegos que tiene la lista
                     _ListGamesPreview(listId: listId),
                   ],
                 ),
@@ -72,7 +72,7 @@ class ListsTab extends ConsumerWidget {
   }
 }
 
-/// Widget que muestra el encabezado de la lista con título y subtítulo del conteo
+/// 🪧 Widget que arma el encabezado de cada lista (título + cuántos juegos cuento)
 class _ListHeader extends ConsumerWidget {
   final String name;
   final IconData leadingIcon;
@@ -124,7 +124,7 @@ class _ListHeader extends ConsumerWidget {
   }
 }
 
-/// Widget que muestra una vista previa de los juegos de una lista
+/// 🎞️ Widget que enseña una vista previa rápida de los juegos dentro de la lista
 class _ListGamesPreview extends ConsumerWidget {
   final String listId;
 
@@ -173,7 +173,7 @@ class _ListGamesPreview extends ConsumerWidget {
   }
 }
 
-/// Widget que muestra una imagen de juego pequeña
+/// 🖼️ Widget que pinta una imagen pequeña del juego (es mi manera de practicar diseños)
 class _GamePreviewImage extends StatelessWidget {
   final String? imageUrl;
   final bool isOverlay;

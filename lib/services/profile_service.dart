@@ -3,20 +3,20 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Servicio para manejar el perfil del usuario
-/// Incluye foto de perfil y datos personales
+/// 🪞 Servicio para manejar el perfil del usuario
+/// 📸 Incluye foto y datos personales (aún aprendo a sincronizarlos bien)
 class ProfileService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Obtiene el ID del usuario actual
+  /// 🆔 Obtiene el ID del usuario actual
   String? get currentUserId => _auth.currentUser?.uid;
 
-  /// Verifica si hay un usuario autenticado
+  /// 🔍 Verifica si hay un usuario autenticado
   bool get isAuthenticated => _auth.currentUser != null;
 
-  /// Obtiene la referencia al documento del perfil del usuario
+  /// 📄 Obtiene la referencia al documento de perfil del usuario
   DocumentReference _getUserProfileRef() {
     final userId = currentUserId;
     if (userId == null) {
@@ -25,7 +25,7 @@ class ProfileService {
     return _firestore.collection('users').doc(userId);
   }
 
-  /// Obtiene la referencia base del directorio de fotos del usuario
+  /// 📂 Obtiene la referencia base del directorio de fotos del usuario
   Reference _getProfilePhotosDirRef() {
     final userId = currentUserId;
     if (userId == null) {
@@ -34,31 +34,31 @@ class ProfileService {
     return _storage.ref().child('profiles/$userId');
   }
 
-  /// Sube una foto de perfil a Firebase Storage con nombre versionado, añade metadatos
-  /// y elimina la foto anterior si existía.
+  /// ☁️ Sube una foto de perfil a Firebase Storage con nombre versionado
+  /// 🧹 También borra la foto anterior si existía (para no dejar archivos sueltos)
   Future<String> uploadProfilePhoto(File photoFile) async {
     if (!isAuthenticated) {
       throw Exception('Usuario no autenticado');
     }
 
     try {
-      // Construir ruta versionada
+      // 🗂️ Construyo una ruta nueva con timestamp
       final photosDirRef = _getProfilePhotosDirRef();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final newPath = 'avatar_$timestamp.jpg';
       final newPhotoRef = photosDirRef.child(newPath);
 
-      // Metadatos básicos
+      // 🧾 Metadatos básicos
       final metadata = SettableMetadata(
         contentType: 'image/jpeg',
         cacheControl: 'public, max-age=3600',
       );
 
-      // Subir archivo
+      // ⬆️ Subo el archivo
       await newPhotoRef.putFile(photoFile, metadata);
       final downloadUrl = await newPhotoRef.getDownloadURL();
 
-      // Intentar borrar la imagen anterior si existe
+      // 🧹 Intento borrar la imagen anterior si todavía está en Storage
       try {
         final snap = await _getUserProfileRef().get();
         if (snap.exists) {
@@ -67,7 +67,7 @@ class ProfileService {
           if (previousPath != null && previousPath.isNotEmpty) {
             await photosDirRef.child(previousPath).delete();
           } else {
-            // Compatibilidad con versión anterior (single file en raíz)
+            // 🕰️ Compatibilidad con la versión anterior (archivo suelto en la raíz)
             final legacyRef = _storage.ref().child('profiles/${currentUserId}.jpg');
             await legacyRef.delete();
           }
@@ -76,14 +76,14 @@ class ProfileService {
         // Ignorar fallos al borrar; no es crítico
       }
 
-      // Guardar URL y ruta en Firestore
+      // 💾 Guardo la URL y la ruta en Firestore
       await _getUserProfileRef().set({
         'photoUrl': downloadUrl,
         'photoPath': newPath,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      // Actualizar la URL en Firebase Auth
+      // 🔄 Actualizo la URL en Firebase Auth para mantener todo alineado
       await _auth.currentUser?.updatePhotoURL(downloadUrl);
       await _auth.currentUser?.reload();
 
@@ -93,7 +93,7 @@ class ProfileService {
     }
   }
 
-  /// Actualiza los datos del perfil del usuario
+  /// 📝 Actualiza los datos del perfil del usuario
   Future<void> updateProfile({
     String? displayName,
     String? alias,
@@ -116,7 +116,7 @@ class ProfileService {
     }
   }
 
-  /// Obtiene el perfil del usuario
+  /// 🔍 Obtiene el perfil del usuario
   Future<Map<String, dynamic>?> getUserProfile() async {
     if (!isAuthenticated) {
       return null;
@@ -133,7 +133,7 @@ class ProfileService {
     }
   }
 
-  /// Obtiene un stream del perfil del usuario
+  /// 🌊 Obtiene un stream del perfil del usuario
   Stream<Map<String, dynamic>?> getUserProfileStream() {
     if (!isAuthenticated) {
       return Stream.value(null);

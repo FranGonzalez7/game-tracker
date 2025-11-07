@@ -3,18 +3,18 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/game.dart';
 
-/// Service class for interacting with the RAWG.io API
-/// Handles fetching game data and searching for games
+/// 🌐 Servicio para hablar con la API de RAWG.io (todavía sigo entendiendo su docs)
+/// 🕹️ Aquí descargo datos de juegos y hago las búsquedas que pide la app
 class GameService {
-  /// Searches for games by name
-  /// Returns a list of Game objects matching the search query
+  /// 🔎 Busca juegos por nombre
+  /// 📦 Devuelve una lista de `Game` que coinciden con la búsqueda
   Future<List<Game>> searchGames(String query) async {
     try {
       if (query.isEmpty) {
         return [];
       }
 
-      // Encode the search query to handle spaces and special characters
+      // 🔤 Codifico la búsqueda para que los espacios y caracteres raros no rompan la URL
       final encodedQuery = Uri.encodeQueryComponent(query.trim());
       final url = '${ApiConfig.getUrl('/games')}&search=$encodedQuery&page_size=20';
       final uri = Uri.parse(url);
@@ -24,11 +24,11 @@ class GameService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         
-        // Check if results key exists and is a list
+        // 🧪 Reviso que venga la clave `results` y que realmente sea una lista
         if (data.containsKey('results') && data['results'] != null) {
           final results = data['results'] as List;
           
-          // Parse games, filtering out any that fail to parse
+          // 🧱 Armo la lista de juegos, saltando los que no pueda parsear (todavía no sé logging pro)
           final games = <Game>[];
           for (var item in results) {
             try {
@@ -36,30 +36,30 @@ class GameService {
                 games.add(Game.fromJson(item));
               }
             } catch (e) {
-              // Skip games that fail to parse
+              // 🙅‍♂️ Si un juego falla al parsear, simplemente lo ignoro
               print('Error parsing game: $e');
             }
           }
           
           return games;
         } else {
-          // API returned success but no results
+          // 🤷‍♀️ La API dijo que todo bien pero no vienen resultados
           return [];
         }
       } else {
-        // Log the error and throw it so the UI can show it
+        // 🚨 Guardo un log básico y lanzo la excepción para que la UI se entere
         print('API Error: Status ${response.statusCode}');
         print('Response: ${response.body}');
         throw Exception('Failed to search games: Status ${response.statusCode}');
       }
     } catch (e) {
-      // Log the error and rethrow it instead of returning dummy data
+      // 📝 Anoto el error y lo relanzo (prefiero eso a inventarme datos)
       print('Search error: $e');
       rethrow;
     }
   }
 
-  /// Gets a specific game by ID
+  /// 🎯 Obtiene un juego específico por su ID
   Future<Game?> getGameById(int id) async {
     try {
       final url = ApiConfig.getUrl('/games/$id');
@@ -75,8 +75,8 @@ class GameService {
     }
   }
 
-  /// Gets the list of available platforms from the RAWG API
-  /// Returns a list of platform names
+  /// 🗂️ Descarga la lista de plataformas disponibles desde RAWG
+  /// 📋 Devuelve solo los nombres de las plataformas
   Future<List<String>> getPlatforms() async {
     try {
       final url = '${ApiConfig.getUrl('/platforms')}&page_size=50';

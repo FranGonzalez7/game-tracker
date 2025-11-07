@@ -1,56 +1,57 @@
-# Game Tracker
+# 🎮 Game Tracker
 
-A simple Flutter app to track video games that you have played or completed.
+> Una app Flutter hecha con mucho cariño para llevar un registro de los videojuegos que vas jugando, terminando o soñando con jugar. Todo pensado en castellano y con toques de Material 3.
 
-## Features
+## ✨ Qué puedes hacer
+- 🔍 Buscar juegos usando la API de RAWG.io y ver sus detalles.
+- 💖 Guardar favoritos en la wishlist y organizar listas personalizadas.
+- 📅 Registrar fechas de inicio y finalización de tus partidas.
+- ⭐ Añadir notas y valoraciones propias para no olvidar qué sentiste.
+- 🔐 Iniciar sesión con Firebase (registro e inicio de sesión con correo/contraseña).
+- 🌙 Cambiar entre modo claro y oscuro cuando quieras.
 
-- Search for games by name using the RAWG.io API
-- Add games to your personal list
-- Mark start and completion dates
-- Add personal ratings and notes
-- Clean, modern Material 3 design
-- User authentication with Firebase (Login and Register)
+## 🚀 Puesta en marcha rápida
 
-## Setup
+1. **Prepara tu entorno**  
+   - Instala [Flutter](https://docs.flutter.dev/get-started/install) (canal estable).  
+   - Ten a mano Android Studio o Xcode según tu plataforma.
 
-1. **Configure Firebase:**
-   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Add your Android/iOS app to the Firebase project
-   - Download the configuration files:
-     - Android: `google-services.json` (place it in `android/app/`)
-     - iOS: `GoogleService-Info.plist` (place it in `ios/Runner/`)
-   - Enable Email/Password authentication in Firebase Console
-     - Go to Authentication > Sign-in method > Enable Email/Password
+2. **Configura Firebase (una sola vez)**  
+   - Crea un proyecto en la [Consola de Firebase](https://console.firebase.google.com/).  
+   - Añade tus apps (Android/iOS/web) y descarga los archivos de configuración:  
+     - Android: coloca `google-services.json` en `android/app/`.  
+     - iOS: coloca `GoogleService-Info.plist` en `ios/Runner/`.  
+   - Activa el método de autenticación *Email/Password* (Authentication ➜ Sign-in method).
 
-2. **Get a free API key from [RAWG.io](https://rawg.io/apidocs)**
-   - When asked for a URL during registration, you can use:
-     - `http://localhost` (for development)
-     - Your GitHub repository URL if you have one
-     - `https://example.com` (temporary URL for development)
-   - Add your API key to `lib/config/api_config.dart`
+3. **Consigue tu API key de RAWG.io**  
+   - Regístrate en [RAWG.io](https://rawg.io/apidocs) y copia la clave gratuita.  
+   - Duplica el archivo `.env.example` como `.env` en la raíz y añade `RAWG_API_KEY=tu_clave_aquí`.
 
-3. **Install dependencies:**
+4. **Instala dependencias y ejecuta**  
    ```bash
    flutter pub get
-   ```
-
-4. **Run the app:**
-   ```bash
    flutter run
    ```
 
-## Architecture
+> 💡 Si algo falla en el arranque, revisa la consola: la app avisa cuando falta la configuración de Firebase o la API key.
 
-The app follows clean architecture principles:
-- **Models**: Data classes for Game and SavedGame
-- **Services**: API service for RAWG.io, local storage service, and Firebase authentication service
-- **Providers**: Riverpod providers for state management (theme, games, saved games, and authentication)
-- **UI**: Screens and widgets organized by feature
+## 🧭 Estructura del proyecto
+- `lib/models/` → Modelos como `Game` y `SavedGame` (datos puros).
+- `lib/services/` → Servicios para RAWG, Firebase, Firestore y Hive.
+- `lib/providers/` → Providers de Riverpod para manejar estado y lógica.
+- `lib/screens/` y `lib/widgets/` → UI modular organizada por pantallas y componentes reutilizables.
+- `assets/` → Imágenes e iconos usados en la interfaz.
 
-## Authentication
+## 🔐 Autenticación en pocas palabras
+- Alta y login con correo y contraseña usando Firebase Authentication.  
+- Sesiones persistentes automáticamente.  
+- Gestión de perfil (nombre, alias, bio y foto) desde la propia app.  
+- Cierre de sesión disponible en la pestaña de configuración.
 
-The app uses Firebase Authentication for user login and registration:
-- Users can create an account with email and password
-- Users can sign in with their credentials
-- Session persistence is handled automatically by Firebase
-- Users can sign out from the Settings screen
+## 🧪 Consejos para pruebas rápidas
+- Usa `flutter run -d chrome` para probar en web sin emulador.  
+- En Android/iOS, asegúrate de tener un dispositivo/emulador con servicios de Google configurados.  
+- Crea un usuario de prueba y explora la wishlist, las listas y el registro de partidas.
+
+## 🤝 Contribuciones y feedback
+Este proyecto sigue evolucionando. Si tienes sugerencias, abre un issue o envía un PR. ¡Toda idea es bienvenida mientras seguimos aprendiendo!

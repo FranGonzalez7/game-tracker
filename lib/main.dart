@@ -9,36 +9,36 @@ import 'screens/auth_screen.dart';
 import 'providers/theme_provider.dart';
 import 'providers/auth_provider.dart';
 
-/// Main entry point of the Game Tracker app
-/// Initializes Firebase, Hive storage and sets up Material 3 theme
+/// 🎮 Punto de inicio de la app Game Tracker (todavía estoy aprendiendo Flutter)
+/// 🚀 Aquí preparo Firebase, Hive y dejo listo el tema de Material 3
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Load environment variables from .env file
+  // 📦 Intento cargar las variables del archivo .env (a veces me olvido de crearlo)
   try {
     await dotenv.load(fileName: ".env");
     debugPrint('Variables de entorno cargadas correctamente');
   } catch (e) {
     debugPrint('Error al cargar .env: $e');
     debugPrint('Asegúrate de que el archivo .env existe en la raíz del proyecto');
-    // Continuar ejecutando pero mostrar error si se intenta usar la API key
+    // 😅 Aunque falle, dejo que siga por ahora, pero luego avisaré si falta la API key
   }
   
-  // Initialize Firebase with platform-specific options
-  // These options are generated automatically by FlutterFire CLI
+  // 🔌 Inicializo Firebase con las opciones específicas de la plataforma
+  // 🤖 Estas opciones las genera el FlutterFire CLI (yo solo las uso tal cual)
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     debugPrint('Firebase inicializado correctamente');
   } catch (e, stackTrace) {
-    // Si Firebase no está configurado, mostrar error detallado
+    // 😖 Si Firebase no está bien configurado, quiero ver un error clarito
     debugPrint('Error al inicializar Firebase: $e');
     debugPrint('Stack trace: $stackTrace');
-    // Continuar ejecutando pero mostrar error en la UI
+    // 🙈 Aun así dejo que corra para poder mostrar un mensajito en la UI
   }
   
-  // Initialize storage service
+  // 🗃️ También inicializo el servicio de almacenamiento (mejor dejarlo listo al inicio)
   try {
     final storageService = StorageService();
     await storageService.init();
@@ -53,8 +53,8 @@ void main() async {
   );
 }
 
-/// Root widget of the application
-/// Configures Material 3 theme and sets up the main screen
+/// 🌟 Widget raíz de la aplicación
+/// 🧰 Configura el tema Material 3 y abre la pantalla principal
 class GameTrackerApp extends ConsumerWidget {
   const GameTrackerApp({super.key});
 
@@ -62,65 +62,65 @@ class GameTrackerApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeProvider);
 
-    // Paleta de colores basada en la captura de Stitch
-    // backgroundColor: #101922 (fondo principal)
-    // fondo de tarjetas (modo lista): #17212F
-    // fondo barra búsqueda: #233648
-    // accentButton: #137FEC (azul)
+    // 🎨 Estoy usando la paleta que copié de la captura de Stitch (me encanta cómo queda)
+    // 🩶 Fondo base: #101922 (así se ve como en la captura)
+    // 🃏 Fondo de tarjetas en modo lista: #17212F
+    // 🔍 Fondo de la barra de búsqueda: #233648
+    // 🔵 Botón destacado: #137FEC
     
     final lightColorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF137FEC), // Azul
+      seedColor: const Color(0xFF137FEC), // 🔵 Azul base que estoy usando en todo
       brightness: Brightness.light,
     );
 
-    // ColorScheme personalizado para modo oscuro basado en la captura
+    // 🌚 Esquema de colores modo oscuro armado a partir de la misma captura
     final darkColorScheme = ColorScheme(
       brightness: Brightness.dark,
-      // Color primario (azul)
+      // 💙 Color primario (azul principal)
       primary: const Color(0xFF137FEC),
       onPrimary: Colors.white,
       primaryContainer: const Color(0xFF137FEC).withOpacity(0.2),
       onPrimaryContainer: const Color(0xFF137FEC),
       
-      // Color secundario (variación del azul)
+      // 💦 Color secundario (una variación más suave del azul)
       secondary: const Color(0xFF137FEC).withOpacity(0.8),
       onSecondary: Colors.white,
       secondaryContainer: const Color(0xFF137FEC).withOpacity(0.15),
       onSecondaryContainer: const Color(0xFF137FEC),
       
-      // Color terciario
-      tertiary: const Color(0xFF4CAF50), // Verde para estados de éxito
+      // 🌱 Color terciario
+      tertiary: const Color(0xFF4CAF50), // 🍀 Verde para cuando algo sale bien
       onTertiary: Colors.white,
       tertiaryContainer: const Color(0xFF4CAF50).withOpacity(0.2),
       onTertiaryContainer: const Color(0xFF4CAF50),
       
-      // Colores de error
+      // 🚨 Colores de error
       error: Colors.red,
       onError: Colors.white,
       errorContainer: Colors.red.withOpacity(0.2),
       onErrorContainer: Colors.red,
       
-      // Fondo principal (#101922)
+      // 🏠 Fondo principal (#101922) para mantener todo uniforme
       surface: const Color(0xFF101922),
       onSurface: Colors.white,
       
-      // Superficie elevada - fondo de tarjetas (#17212F)
+      // 🧱 Superficie elevada: fondo de las tarjetas (#17212F)
       surfaceContainerHighest: const Color(0xFF17212F),
       surfaceContainerHigh: const Color(0xFF17212F),
       surfaceContainer: const Color(0xFF17212F),
       surfaceContainerLow: const Color(0xFF141D2A),
       surfaceContainerLowest: const Color(0xFF101922),
-      onSurfaceVariant: Colors.white.withOpacity(0.7), // Gris claro para texto secundario
+      onSurfaceVariant: Colors.white.withOpacity(0.7), // ✏️ Gris clarito para texto secundario
       
-      // Fondo
+      // 🌌 Fondo general (cuando no hay tarjetas ni nada)
       background: const Color(0xFF101922),
       onBackground: Colors.white,
       
-      // Outline
+      // ✨ Outline para bordes suaves
       outline: Colors.white.withOpacity(0.2),
       outlineVariant: Colors.white.withOpacity(0.1),
       
-      // Shadow y scrim
+      // 🕶️ Shadow y scrim para dar sensación de profundidad
       shadow: Colors.black,
       scrim: Colors.black,
       inverseSurface: Colors.white,
@@ -217,7 +217,7 @@ class GameTrackerApp extends ConsumerWidget {
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: const Color(0xFF233648), // fondo barra búsqueda
+          fillColor: const Color(0xFF233648), // 🔍 Fondo de la barra de búsqueda
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
@@ -266,9 +266,8 @@ class GameTrackerApp extends ConsumerWidget {
   }
 }
 
-/// Widget wrapper que determina qué pantalla mostrar según el estado de autenticación
-/// Muestra la pantalla de autenticación si el usuario no está logueado,
-/// o la pantalla principal si está autenticado
+/// 🔐 Widget envoltorio que decide qué pantalla mostrar según el estado de autenticación
+/// 🧭 Si no hay sesión muestro el login, si sí hay paso directo a la pantalla principal
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
 
@@ -278,15 +277,15 @@ class AuthWrapper extends ConsumerWidget {
 
     return authState.when(
       data: (user) {
-        // Si hay un usuario autenticado, mostrar la pantalla principal
+        // ✅ Si hay usuario autenticado, voy directo a la pantalla principal
         if (user != null) {
           return const MainScreen();
         }
-        // Si no hay usuario, mostrar la pantalla de autenticación
+        // 👋 Si no encuentro usuario, regreso a la pantalla de autenticación
         return const AuthScreen();
       },
       loading: () {
-        // Mostrar un indicador de carga mientras se verifica el estado de autenticación
+        // ⏳ Mientras espero la respuesta, muestro un indicador de carga sencillito
         return Scaffold(
           body: Center(
             child: CircularProgressIndicator(
@@ -296,8 +295,7 @@ class AuthWrapper extends ConsumerWidget {
         );
       },
       error: (error, stack) {
-        // Si hay un error, mostrar la pantalla de autenticación
-        // y loguear el error para debugging
+        // ⚠️ Si algo falla, vuelvo al login y anoto el error para revisarlo luego
         debugPrint('Error en AuthWrapper: $error');
         return const AuthScreen();
       },

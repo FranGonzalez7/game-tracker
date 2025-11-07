@@ -4,7 +4,7 @@ import '../models/game.dart';
 import '../providers/lists_provider.dart';
 import '../providers/wishlist_provider.dart';
 
-/// Modal para seleccionar una lista y añadir un juego
+/// 🧺 Modal para elegir una lista y añadir un juego (todavía lo mantengo simple)
 class AddToListModal extends ConsumerWidget {
   final Game game;
 
@@ -13,7 +13,7 @@ class AddToListModal extends ConsumerWidget {
     required this.game,
   });
 
-  /// Muestra el modal de selección de listas
+  /// 👋 Muestra el modal donde elijo la lista destino
   static Future<void> show(BuildContext context, Game game) async {
     await showDialog(
       context: context,
@@ -37,7 +37,7 @@ class AddToListModal extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Título
+            // 🏷️ Título del modal
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -61,7 +61,7 @@ class AddToListModal extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Nombre del juego
+            // 🎮 Nombre del juego que quiero agregar
             Text(
               game.name,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -73,7 +73,7 @@ class AddToListModal extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 16),
-            // Lista de listas disponibles
+            // 📜 Listado de listas disponibles
             Expanded(
               child: listsAsync.when(
                 data: (lists) {
@@ -133,7 +133,7 @@ class AddToListModal extends ConsumerWidget {
                           );
                         },
                         onUpdated: () {
-                          // Invalidar el provider para refrescar el estado
+                          // 🔄 Invalidar el provider para refrescar el estado
                           ref.invalidate(isGameInListProvider(GameListKey(listId: listId, gameId: game.id)));
                         },
                       );

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 
-/// Pantalla de autenticación con pestañas para Login y Registro
-/// Utiliza el diseño Material 3 consistente con el resto de la app
+/// 🔐 Pantalla de autenticación con pestañas para Login y Registro
+/// 🎨 Intento mantener el estilo Material 3 igual que en el resto de la app
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -32,7 +32,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       body: SafeArea(
         child: Column(
           children: [
-            // Logo o título
+            // 🎮 Logo o título (lo pongo para que la pantalla no se sienta vacía)
             Padding(
               padding: const EdgeInsets.all(32.0),
               child: Column(
@@ -59,7 +59,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 ],
               ),
             ),
-            // Tabs para Login y Registro
+            // 🧷 Pestañas para cambiar entre Login y Registro
             TabBar(
               controller: _tabController,
               tabs: const [
@@ -71,7 +71,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 fontWeight: FontWeight.w600,
               ),
             ),
-            // Contenido de las pestañas
+            // 📚 Contenido que corresponde a cada pestaña
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -88,8 +88,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 }
 
-/// Pestaña de Login
-/// Permite iniciar sesión con correo y contraseña
+/// 🔑 Pestaña de Login
+/// 📬 Permite iniciar sesión con correo y contraseña
 class LoginTab extends ConsumerStatefulWidget {
   const LoginTab({super.key});
 
@@ -111,7 +111,7 @@ class _LoginTabState extends ConsumerState<LoginTab> {
     super.dispose();
   }
 
-  /// Valida e inicia sesión con las credenciales proporcionadas
+  /// 🧪 Valida e inicia sesión con las credenciales que escribe la persona
   Future<void> _signIn() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -164,7 +164,7 @@ class _LoginTabState extends ConsumerState<LoginTab> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            // Campo de correo electrónico
+            // 📧 Campo de correo electrónico (validación básica mientras aprendo más)
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -185,7 +185,7 @@ class _LoginTabState extends ConsumerState<LoginTab> {
               },
             ),
             const SizedBox(height: 16),
-            // Campo de contraseña
+            // 🔒 Campo de contraseña (con toggle para verla porque siempre me equivoco)
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
@@ -216,7 +216,7 @@ class _LoginTabState extends ConsumerState<LoginTab> {
               },
             ),
             const SizedBox(height: 32),
-            // Botón de inicio de sesión
+            // 🚪 Botón de iniciar sesión (se bloquea mientras espero la respuesta)
             FilledButton(
               onPressed: _isLoading ? null : _signIn,
               style: FilledButton.styleFrom(
@@ -243,8 +243,8 @@ class _LoginTabState extends ConsumerState<LoginTab> {
   }
 }
 
-/// Pestaña de Registro
-/// Permite crear una nueva cuenta con correo y contraseña
+/// 🆕 Pestaña de Registro
+/// ✉️ Permite crear una cuenta usando correo y contraseña
 class RegisterTab extends ConsumerStatefulWidget {
   const RegisterTab({super.key});
 
@@ -269,7 +269,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
     super.dispose();
   }
 
-  /// Valida y registra un nuevo usuario con las credenciales proporcionadas
+  /// 🧪 Valida y registra un nuevo usuario con los datos del formulario
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -322,7 +322,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            // Campo de correo electrónico
+            // 📧 Campo de correo electrónico para el registro
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -343,7 +343,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
               },
             ),
             const SizedBox(height: 16),
-            // Campo de contraseña
+            // 🔒 Campo de contraseña (reaprovecho la misma lógica que en Login)
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
@@ -374,7 +374,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
               },
             ),
             const SizedBox(height: 16),
-            // Campo de confirmación de contraseña
+            // 🔁 Campo de confirmación para evitar escribir mal la contraseña
             TextFormField(
               controller: _confirmPasswordController,
               obscureText: _obscureConfirmPassword,
@@ -405,7 +405,7 @@ class _RegisterTabState extends ConsumerState<RegisterTab> {
               },
             ),
             const SizedBox(height: 32),
-            // Botón de registro
+            // 🆕 Botón para crear la cuenta (también se desactiva mientras carga)
             FilledButton(
               onPressed: _isLoading ? null : _register,
               style: FilledButton.styleFrom(

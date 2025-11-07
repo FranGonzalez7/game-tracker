@@ -5,8 +5,8 @@ import '../models/saved_game.dart';
 import '../widgets/game_list_card.dart';
 import 'game_detail_screen.dart';
 
-/// Tab screen displaying all saved games
-/// Shows game cards with title, cover, dates, and rating
+/// 📚 Pestaña que muestra todos los juegos guardados
+/// 🃏 Enseña tarjetas con título, portada, fechas y valoración personal
 class MyGamesTab extends ConsumerWidget {
   const MyGamesTab({super.key});
 

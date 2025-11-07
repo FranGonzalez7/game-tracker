@@ -3,8 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../models/saved_game.dart';
 
-/// Card widget for displaying saved games in the My Games tab
-/// Shows game image, title, dates, rating, and provides edit/delete actions
+/// 🗂️ Tarjeta para mostrar juegos guardados en la pestaña Mis Juegos
+/// 🎯 Enseña imagen, título, fechas, nota y botones para editar/borrar (aún estoy afinando detalles)
 class GameListCard extends StatelessWidget {
   final SavedGame game;
   final VoidCallback onTap;
@@ -43,7 +43,7 @@ class GameListCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Game Image
+            // 🖼️ Imagen del juego (si no hay, muestro el icono)
             if (game.backgroundImage != null)
               ClipRRect(
                 child: CachedNetworkImage(
@@ -83,7 +83,7 @@ class GameListCard extends StatelessWidget {
                 ),
               ),
 
-            // Game Info
+            // 📚 Información del juego guardado
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),

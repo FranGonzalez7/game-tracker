@@ -5,9 +5,9 @@ import '../models/game.dart';
 import '../providers/wishlist_provider.dart';
 import 'add_to_list_modal.dart';
 
-/// Modal widget that displays detailed information about a game
-/// Appears centered on the screen as a dialog
-/// Allows swiping left/right to navigate between games
+/// 🪄 Modal que muestra la info detallada de un juego (todavía lo voy puliendo)
+/// 🪟 Aparece centrado como un diálogo
+/// 👈👉 Permite deslizar a la izquierda/derecha para navegar entre juegos
 class GameDetailModal extends ConsumerStatefulWidget {
   final List<Game> games;
   final int initialIndex;
@@ -21,15 +21,15 @@ class GameDetailModal extends ConsumerStatefulWidget {
   @override
   ConsumerState<GameDetailModal> createState() => _GameDetailModalState();
 
-  /// Shows the game detail modal centered on the screen
-  /// Allows swiping between games if a list is provided
+  /// 👀 Muestra el modal de detalle centrado en la pantalla
+  /// 🔁 Permite deslizar entre juegos si le paso una lista completa
   static Future<void> show(BuildContext context, Game game, {List<Game>? allGames, int? initialIndex}) async {
     final games = allGames ?? [game];
     final index = initialIndex ?? 0;
     
     await showDialog(
       context: context,
-      barrierDismissible: true, // Permite cerrar tocando fuera del modal
+      barrierDismissible: true, // 🙌 Se puede cerrar tocando fuera del modal
       builder: (context) => GameDetailModal(
         games: games,
         initialIndex: index,
@@ -67,7 +67,7 @@ class _GameDetailModalState extends ConsumerState<GameDetailModal> {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: const Color(0xFF137FEC), // Azul
+            color: const Color(0xFF137FEC), // 🔵 Azul que uso como color principal
             width: 3,
           ),
         ),
@@ -86,7 +86,7 @@ class _GameDetailModalState extends ConsumerState<GameDetailModal> {
   }
 }
 
-/// Widget that displays the content for a single game
+/// 📦 Widget que muestra el contenido detallado para un juego individual
 class _GameDetailContent extends ConsumerWidget {
   final Game game;
 
@@ -103,7 +103,7 @@ class _GameDetailContent extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Game Image
+          // 🖼️ Imagen grande del juego (me gusta que sea lo primero)
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             child: game.backgroundImage != null
@@ -146,13 +146,13 @@ class _GameDetailContent extends ConsumerWidget {
                   ),
           ),
 
-          // Game Info
+          // 📚 Información del juego
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title
+                // 🏷️ Título del juego
                 Text(
                   game.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -164,7 +164,7 @@ class _GameDetailContent extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Rating with Wishlist Icon
+                // ⭐ Valoración con icono para añadir/quitar de la wishlist
                 if (game.rating != null) ...[
                   Row(
                     children: [
@@ -259,7 +259,7 @@ class _GameDetailContent extends ConsumerWidget {
                   const SizedBox(height: 16),
                 ],
 
-                // Release Date
+                // 📅 Fecha de lanzamiento
                 if (game.released != null) ...[
                   Row(
                     children: [
@@ -283,7 +283,7 @@ class _GameDetailContent extends ConsumerWidget {
                   const SizedBox(height: 16),
                 ],
 
-                // Platforms
+                // 🎮 Plataformas disponibles
                 if (game.platforms != null && game.platforms!.isNotEmpty) ...[
                   Text(
                     'Plataformas',
@@ -322,7 +322,7 @@ class _GameDetailContent extends ConsumerWidget {
                   const SizedBox(height: 20),
                 ],
 
-                // Add to Lists Button
+                // ➕ Botón para añadir a listas personalizadas
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
@@ -352,7 +352,7 @@ class _GameDetailContent extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
 
-                // Close Button
+                // ❌ Botón para cerrar el modal
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(

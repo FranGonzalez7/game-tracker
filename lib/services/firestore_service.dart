@@ -2,21 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/game.dart';
 
-/// Servicio para interactuar con Firestore
-/// Maneja las operaciones de Wishlist y listas personalizadas
+/// 🔥 Servicio para hablar con Firestore
+/// 📚 Maneja la wishlist y las listas personalizadas (todavía repaso las buenas prácticas)
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Obtiene el ID del usuario actual
+  /// 🆔 Obtiene el ID del usuario actual
   String? get currentUserId => _auth.currentUser?.uid;
 
-  /// Verifica si hay un usuario autenticado
+  /// 🔍 Verifica si hay un usuario autenticado
   bool get isAuthenticated => _auth.currentUser != null;
 
-  // ==================== WISHLIST ====================
+  // 🌟==================== WISHLIST ====================🌟
 
-  /// Obtiene la referencia a la colección de wishlist del usuario
+  /// 📂 Obtiene la referencia a la colección de wishlist del usuario
   CollectionReference _getWishlistCollection() {
     final userId = currentUserId;
     if (userId == null) {
@@ -25,7 +25,7 @@ class FirestoreService {
     return _firestore.collection('users').doc(userId).collection('wishlist');
   }
 
-  /// Añade un juego a la wishlist del usuario
+  /// ➕ Añade un juego a la wishlist del usuario
   Future<void> addToWishlist(Game game) async {
     if (!isAuthenticated) {
       throw Exception('Usuario no autenticado');
@@ -44,7 +44,7 @@ class FirestoreService {
     });
   }
 
-  /// Elimina un juego de la wishlist
+  /// 🗑️ Elimina un juego de la wishlist
   Future<void> removeFromWishlist(int gameId) async {
     if (!isAuthenticated) {
       throw Exception('Usuario no autenticado');
@@ -54,8 +54,8 @@ class FirestoreService {
     await wishlistRef.doc(gameId.toString()).delete();
   }
 
-  /// Obtiene todos los juegos de la wishlist del usuario
-  /// Retorna un Stream que emite cambios en tiempo real
+  /// 🌊 Obtiene todos los juegos de la wishlist del usuario
+  /// 📡 Retorna un Stream con cambios en tiempo real
   Stream<List<Game>> getWishlistStream() {
     if (!isAuthenticated) {
       return Stream.value([]);
@@ -80,7 +80,7 @@ class FirestoreService {
     });
   }
 
-  /// Verifica si un juego está en la wishlist
+  /// ❓ Verifica si un juego está en la wishlist
   Future<bool> isInWishlist(int gameId) async {
     if (!isAuthenticated) {
       return false;
@@ -91,7 +91,7 @@ class FirestoreService {
     return doc.exists;
   }
 
-  /// Obtiene todos los juegos de la wishlist (una sola vez, sin stream)
+  /// 📦 Obtiene todos los juegos de la wishlist (solo una vez, sin stream)
   Future<List<Game>> getWishlist() async {
     if (!isAuthenticated) {
       return [];
@@ -115,9 +115,9 @@ class FirestoreService {
     }).toList();
   }
 
-  // ==================== LISTAS PERSONALIZADAS ====================
+  // 🗃️==================== LISTAS PERSONALIZADAS ====================🗃️
 
-  /// Referencia a la colección de listas personalizadas del usuario
+  /// 📂 Referencia a la colección de listas personalizadas del usuario
   CollectionReference _getListsCollection() {
     final userId = currentUserId;
     if (userId == null) {
@@ -126,7 +126,7 @@ class FirestoreService {
     return _firestore.collection('users').doc(userId).collection('lists');
   }
 
-  /// Crea una nueva lista con nombre
+  /// 🆕 Crea una nueva lista con nombre
   Future<DocumentReference> createList(String name) async {
     if (!isAuthenticated) {
       throw Exception('Usuario no autenticado');
@@ -140,7 +140,7 @@ class FirestoreService {
     });
   }
 
-  /// Asegura que existan las listas predeterminadas del usuario
+  /// 🛠️ Asegura que existan las listas predeterminadas del usuario
   Future<void> ensureDefaultLists() async {
     if (!isAuthenticated) {
       throw Exception('Usuario no autenticado');
@@ -153,7 +153,7 @@ class FirestoreService {
     final favoritesId = 'favorites';
     final playedYearId = 'played_year_$currentYear';
 
-    // Crear/actualizar con IDs deterministas para evitar duplicados
+    // 🔁 Creo/actualizo con IDs fijos para evitar duplicados
     await listsRef.doc(favoritesId).set({
       'name': 'Mis juegos favoritos',
       'isDefault': true,
@@ -171,7 +171,7 @@ class FirestoreService {
     }, SetOptions(merge: true));
   }
 
-  /// Stream de listas del usuario
+  /// 🌊 Stream de listas del usuario
   Stream<List<Map<String, dynamic>>> getUserListsStream() {
     if (!isAuthenticated) {
       return Stream.value(<Map<String, dynamic>>[]);
@@ -189,7 +189,7 @@ class FirestoreService {
         }).toList());
   }
 
-  /// Obtiene la referencia a la colección de juegos de una lista
+  /// 📂 Obtiene la referencia a la colección de juegos de una lista
   CollectionReference _getListGamesCollection(String listId) {
     final userId = currentUserId;
     if (userId == null) {
@@ -203,7 +203,7 @@ class FirestoreService {
         .collection('games');
   }
 
-  /// Añade un juego a una lista
+  /// ➕ Añade un juego a una lista personalizada
   Future<void> addGameToList(String listId, Game game) async {
     if (!isAuthenticated) {
       throw Exception('Usuario no autenticado');
@@ -221,12 +221,12 @@ class FirestoreService {
       'addedAt': FieldValue.serverTimestamp(),
     });
 
-    // Actualizar updatedAt de la lista
+    // ⏰ Actualizo el `updatedAt` de la lista para reflejar el cambio
     final listRef = _getListsCollection().doc(listId);
     await listRef.update({'updatedAt': FieldValue.serverTimestamp()});
   }
 
-  /// Obtiene los juegos de una lista (stream)
+  /// 📡 Obtiene los juegos de una lista (stream)
   Stream<List<Game>> getListGamesStream(String listId) {
     if (!isAuthenticated) {
       return Stream.value([]);
@@ -251,7 +251,7 @@ class FirestoreService {
     });
   }
 
-  /// Verifica si un juego está en una lista
+  /// ❓ Verifica si un juego está en una lista
   Future<bool> isGameInList(String listId, int gameId) async {
     if (!isAuthenticated) {
       return false;

@@ -1,4 +1,4 @@
-/// Model class representing a game from the RAWG.io API
+/// 🎮 Modelo que representa un juego obtenido desde la API de RAWG.io
 class Game {
   final int id;
   final String name;
@@ -16,14 +16,14 @@ class Game {
     this.platforms,
   });
 
-  /// Creates a Game instance from JSON data
+  /// 🧪 Crea una instancia de `Game` a partir del JSON que devuelve la API
   factory Game.fromJson(Map<String, dynamic> json) {
-    // Ensure required fields are present and valid
+    // ✅ Me aseguro de que los campos obligatorios existan y sean válidos
     if (json['id'] == null || json['name'] == null) {
       throw ArgumentError('Game JSON must have id and name fields');
     }
 
-    // Safely parse platforms
+    // 🛟 Intento parsear las plataformas con cuidado
     List<String>? platformsList;
     if (json['platforms'] != null && json['platforms'] is List) {
       try {
@@ -49,7 +49,7 @@ class Game {
     );
   }
 
-  /// Converts Game to JSON for storage
+  /// 🔁 Convierte el `Game` a JSON para guardarlo con facilidad
   Map<String, dynamic> toJson() {
     return {
       'id': id,

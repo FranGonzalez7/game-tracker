@@ -6,8 +6,8 @@ import '../providers/theme_provider.dart';
 class SettingsTab extends ConsumerWidget {
   const SettingsTab({super.key});
 
-  /// Cierra la sesión del usuario actual
-  /// Muestra un diálogo de confirmación antes de cerrar sesión
+  /// 🚪 Cierra la sesión del usuario actual
+  /// 🤔 Antes pregunto con un diálogo de confirmación (nunca está de más)
   Future<void> _signOut(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -60,7 +60,7 @@ class SettingsTab extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        // Título de la sección
+        // 🏷️ Título principal de la sección de ajustes
         Text(
           'Configuración',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -68,7 +68,7 @@ class SettingsTab extends ConsumerWidget {
               ),
         ),
         const SizedBox(height: 24),
-        // Información del usuario actual
+        // 🧑‍💻 Tarjeta con la info básica del usuario actual
         authState.when(
           data: (user) {
             if (user != null) {
@@ -92,7 +92,7 @@ class SettingsTab extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
         ),
         const SizedBox(height: 24),
-        // Configuración de tema
+        // 🌗 Configuración para cambiar entre modo claro y oscuro
         Card(
           child: SwitchListTile(
             title: const Text('Modo oscuro'),
@@ -110,7 +110,7 @@ class SettingsTab extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 24),
-        // Botón de cerrar sesión
+        // 🔚 Botón final para cerrar sesión si la persona lo necesita
         authState.when(
           data: (user) {
             if (user != null) {

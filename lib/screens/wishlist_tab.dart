@@ -5,8 +5,8 @@ import '../providers/theme_provider.dart';
 import '../widgets/game_search_card.dart';
 import '../widgets/game_detail_modal.dart';
 
-/// Tab screen for displaying user's wishlist
-/// Shows games saved to wishlist from Firestore
+/// 💖 Pestaña que muestra la wishlist del usuario (la cargo directo desde Firestore)
+/// 📦 Aquí enseño los juegos guardados y dejo cambiar la vista como buen aprendiz
 class WishlistTab extends ConsumerWidget {
   const WishlistTab({super.key});
 
@@ -68,7 +68,7 @@ class WishlistTab extends ConsumerWidget {
 
         return Column(
           children: [
-            // Options toolbar
+            // 🛠️ Barra de opciones para ajustar la vista
             Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -84,7 +84,7 @@ class WishlistTab extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Size controls (only show in grid view)
+                  // 📏 Controles de tamaño (solo aparecen en vista de cuadrícula)
                   if (!viewSettings.isListView)
                     Row(
                       children: [
@@ -116,7 +116,7 @@ class WishlistTab extends ConsumerWidget {
                     )
                   else
                     const SizedBox.shrink(),
-                  // List/Grid toggle button
+                  // 🔄 Botón para cambiar entre lista y cuadrícula
                   IconButton(
                     onPressed: toggleView,
                     icon: Icon(viewSettings.isListView ? Icons.grid_view : Icons.list),
@@ -132,7 +132,7 @@ class WishlistTab extends ConsumerWidget {
                 ],
               ),
             ),
-            // Game list or grid
+            // 🎮 Zona donde muestro las tarjetas (lista o cuadrícula según se elija)
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),

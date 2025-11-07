@@ -4,8 +4,8 @@ import '../providers/game_provider.dart';
 import '../widgets/game_search_card.dart';
 import '../widgets/game_detail_modal.dart';
 
-/// Tab screen for searching games from the RAWG API
-/// Displays a search bar and list of search results
+/// 🧭 Pestaña para buscar juegos usando la API de RAWG (todavía aprendo a paginar)
+/// 🔍 Muestra una barra de búsqueda y la lista de resultados que voy encontrando
 class SearchTab extends ConsumerStatefulWidget {
   const SearchTab({super.key});
 
@@ -22,10 +22,10 @@ class _SearchTabState extends ConsumerState<SearchTab> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      setState(() {}); // Rebuild to update suffix icon
+      setState(() {}); // 🔁 Reconstruyo para refrescar el icono de limpiar
     });
     
-    // Cerrar el teclado si está abierto después de hot restart
+    // ⌨️ Cierro el teclado si quedó abierto tras un hot restart (me pasa seguido)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_focusNode.hasFocus) {
         _focusNode.unfocus();
@@ -43,7 +43,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
   void _performSearch(String query) {
     if (query != _lastQuery) {
       _lastQuery = query;
-      // Limpiar filtros cuando cambia la búsqueda
+      // 🧼 Limpio los filtros cada vez que cambia la búsqueda para evitar mezclas raras
       ref.read(searchFiltersProvider.notifier).state = const SearchFilters();
       ref.read(unfilteredGameSearchProvider.notifier).searchGames(query);
     }
@@ -55,7 +55,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
 
     return Column(
       children: [
-        // Search Bar
+        // 🔍 Barra de búsqueda principal
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
           child: TextField(
@@ -92,7 +92,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
           ),
         ),
 
-        // Filter Bar
+        // 🎛️ Barra de filtros (aún está sencilla, pero voy mejorándola)
         Container(
           height: 40,
           decoration: BoxDecoration(
@@ -132,7 +132,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                 _FilterChip(
                   label: 'Fecha',
                   onTap: () {
-                    // TODO: Implementar filtro de fecha
+                    // TODO ✍️: implementar filtro de fecha (todavía no sé cómo paginar por meses)
                   },
                 ),
               ],
@@ -140,7 +140,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
           ),
         ),
 
-        // Search Results
+        // 📄 Área donde muestro los resultados de la búsqueda
         Expanded(
           child: GestureDetector(
             onTap: () => _focusNode.unfocus(),
@@ -184,7 +184,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                 );
               }
 
-              // Calculate crossAxisCount based on screen width (minimum 2, up to 3)
+              // 📐 Calculo cuántas columnas caben según el ancho (mínimo 2, máximo 3)
               final screenWidth = MediaQuery.of(context).size.width;
               final crossAxisCount = screenWidth > 600 ? 3 : 2;
 
@@ -351,7 +351,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
   }
 
   void _applyFilters() {
-    // Actualizar el provider con las plataformas seleccionadas
+    // 💾 Actualizo el provider con las plataformas que quedaron marcadas
     final currentFilters = ref.read(searchFiltersProvider);
     ref.read(searchFiltersProvider.notifier).state = currentFilters.copyWith(
       platforms: _selectedPlatforms.isEmpty ? null : _selectedPlatforms.toList(),
@@ -364,7 +364,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
     setState(() {
       _selectedPlatforms.clear();
     });
-    // Actualizar el provider también para que se refleje inmediatamente
+    // 🔄 También actualizo el provider para que se vea el cambio enseguida
     final currentFilters = ref.read(searchFiltersProvider);
     ref.read(searchFiltersProvider.notifier).state = currentFilters.copyWith(
       clearPlatforms: true,
@@ -376,7 +376,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
     final availablePlatforms = ref.watch(availablePlatformsProvider);
     final screenSize = MediaQuery.of(context).size;
     
-    // Limpiar selecciones que ya no están disponibles (solo una vez al montar)
+    // 🧹 Limpio selecciones que ya no existen (solo la primera vez que se monta)
     if (_selectedPlatforms.isNotEmpty && availablePlatforms.isNotEmpty) {
       final toRemove = _selectedPlatforms.where((p) => !availablePlatforms.contains(p)).toList();
       if (toRemove.isNotEmpty) {
@@ -403,7 +403,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
         ),
       child: Column(
         children: [
-          // Header
+          // 🎀 Encabezado del modal de filtros
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -443,7 +443,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
               ],
             ),
           ),
-          // Platforms List
+          // 📋 Lista de plataformas disponibles
           Expanded(
             child: availablePlatforms.isEmpty
                 ? const Center(
@@ -488,7 +488,7 @@ class _PlatformFilterModalState extends ConsumerState<_PlatformFilterModal> {
                     },
                   ),
           ),
-          // Footer buttons
+          // 🧭 Botones del pie (cancelar o aplicar)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

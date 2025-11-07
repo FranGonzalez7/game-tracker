@@ -3,8 +3,8 @@ import 'game.dart';
 
 part 'saved_game.g.dart';
 
-/// Model class representing a saved game with user-specific data
-/// This extends the Game model with personal tracking information
+/// 💾 Modelo que representa un juego guardado con datos personales
+/// 📝 Extiende el modelo `Game` con información para el seguimiento propio
 @HiveType(typeId: 0)
 class SavedGame {
   @HiveField(0)
@@ -50,7 +50,7 @@ class SavedGame {
     this.notes,
   });
 
-  /// Creates a SavedGame from a Game object
+  /// 🧪 Crea un `SavedGame` a partir de un `Game`
   factory SavedGame.fromGame(Game game) {
     return SavedGame(
       id: game.id,
@@ -62,7 +62,7 @@ class SavedGame {
     );
   }
 
-  /// Creates a copy with updated fields
+  /// ✏️ Crea una copia con los campos actualizados
   SavedGame copyWith({
     int? id,
     String? name,

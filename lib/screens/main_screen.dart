@@ -11,8 +11,8 @@ import '../widgets/profile_modal.dart';
 import '../providers/auth_provider.dart';
 import '../providers/wishlist_provider.dart';
 
-/// Main screen with tabs for Search and My Games
-/// Uses Material 3 design with a clean, modern interface
+/// 🧭 Pantalla principal con pestañas para Buscar y Mis Juegos
+/// 🧱 Está hecha con Material 3 y trato de mantenerla limpia (sigo practicando diseño)
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
@@ -21,7 +21,7 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  int _currentIndex = 2; // Home por defecto
+  int _currentIndex = 2; // 🏠 Arranco en Home por defecto porque es mi pestaña favorita
 
   static const _titles = ['Wishlist', 'Search', 'Home', 'Lists', 'Settings'];
 
@@ -111,7 +111,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           preferredSize: const Size.fromHeight(1),
           child: Container(
             height: 3,
-            color: const Color(0xFF0A4A7A), // Azul oscuro
+            color: const Color(0xFF0A4A7A), // 🌌 Azul oscurito para remarcar el borde
           ),
         ),
       ),
@@ -151,7 +151,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
                 if (name != null && name.isNotEmpty) {
                   try {
-                    // usamos el mismo provider de Firestore existente
+                    // 🔁 Uso el mismo provider de Firestore que ya teníamos para no duplicar lógica
                     final firestoreService = ref.read(firestoreServiceProvider);
                     await firestoreService.createList(name);
                     if (mounted) {
@@ -178,7 +178,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         decoration: const BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Color(0xFF0A4A7A), // Azul oscuro
+              color: Color(0xFF0A4A7A), // 🌌 Azul oscurito, igual que arriba
               width: 3,
             ),
           ),
@@ -230,8 +230,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 }
 
-/// Widget personalizado para los iconos de la bottom navigation bar
-/// Sin círculo de fondo, icono blanco por defecto, amplificado y celeste cuando está seleccionado
+/// 🧷 Widget personalizado para los iconos de la barra inferior
+/// 🌟 Sin círculo, icono blanco por defecto y celeste brillante cuando está seleccionado
 class _BottomNavIcon extends StatelessWidget {
   final IconData icon;
   final bool isSelected;
@@ -263,16 +263,16 @@ class _BottomNavIcon extends StatelessWidget {
                   width: isSelected ? 34 : 26,
                   height: isSelected ? 34 : 26,
                   color: isSelected 
-                      ? const Color(0xFF5FD0FF) // Celeste potente cuando está seleccionado
-                      : Colors.white.withOpacity(0.7), // Blanco semi-transparente cuando no está seleccionado
+                      ? const Color(0xFF5FD0FF) // ✨ Celeste potente cuando está seleccionado
+                      : Colors.white.withOpacity(0.7), // 🤍 Blanco semi-transparente cuando no está seleccionado
                   colorBlendMode: BlendMode.srcIn,
                 )
               : Icon(
                   icon,
                   size: isSelected ? 34 : 26,
                   color: isSelected 
-                      ? const Color(0xFF5FD0FF) // Celeste potente cuando está seleccionado
-                      : Colors.white.withOpacity(0.7), // Blanco semi-transparente cuando no está seleccionado
+                      ? const Color(0xFF5FD0FF) // ✨ Celeste potente cuando está seleccionado
+                      : Colors.white.withOpacity(0.7), // 🤍 Blanco semi-transparente cuando no está seleccionado
                 ),
         ),
       ),

@@ -1,16 +1,16 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/saved_game.dart';
 
-/// Service class for local storage using Hive
-/// Handles saving, loading, and managing saved games
+/// 💾 Servicio para almacenamiento local usando Hive
+/// 📦 Maneja guardar, cargar y administrar juegos guardados (todavía repaso Hive)
 class StorageService {
   static const String _boxName = 'savedGames';
 
-  /// Initializes Hive and opens the saved games box
+  /// 🚀 Inicializa Hive y abre la caja de juegos guardados
   Future<void> init() async {
     await Hive.initFlutter();
     
-    // Register adapters
+    // 🧩 Registro los adapters si aún no están listos
     if (!Hive.isAdapterRegistered(0)) {
       Hive.registerAdapter(SavedGameAdapter());
     }
@@ -18,7 +18,7 @@ class StorageService {
     await Hive.openBox<SavedGame>(_boxName);
   }
 
-  /// Gets all saved games
+  /// 📚 Obtiene todos los juegos guardados
   List<SavedGame> getAllGames() {
     try {
       if (!Hive.isBoxOpen(_boxName)) {
@@ -35,7 +35,7 @@ class StorageService {
     }
   }
 
-  /// Saves a game to local storage
+  /// 💾 Guarda un juego en el almacenamiento local
   Future<void> saveGame(SavedGame game) async {
     try {
       if (!Hive.isBoxOpen(_boxName)) {
@@ -46,7 +46,7 @@ class StorageService {
       await box.put(game.id, game);
       print('Successfully saved game: ${game.name} (ID: ${game.id})');
       
-      // Verify it was saved
+      // 🔍 Verifico que realmente quedó guardado
       final saved = box.get(game.id);
       if (saved != null) {
         print('Verified: Game ${saved.name} is in storage');
@@ -59,24 +59,24 @@ class StorageService {
     }
   }
 
-  /// Updates an existing saved game
+  /// ✏️ Actualiza un juego que ya estaba guardado
   Future<void> updateGame(SavedGame game) async {
     await saveGame(game);
   }
 
-  /// Deletes a game from local storage
+  /// 🗑️ Elimina un juego del almacenamiento local
   Future<void> deleteGame(int gameId) async {
     final box = Hive.box<SavedGame>(_boxName);
     await box.delete(gameId);
   }
 
-  /// Checks if a game is already saved
+  /// ❓ Revisa si un juego ya está guardado
   bool isGameSaved(int gameId) {
     final box = Hive.box<SavedGame>(_boxName);
     return box.containsKey(gameId);
   }
 
-  /// Gets a specific saved game by ID
+  /// 🎯 Obtiene un juego específico por ID
   SavedGame? getGame(int gameId) {
     final box = Hive.box<SavedGame>(_boxName);
     return box.get(gameId);

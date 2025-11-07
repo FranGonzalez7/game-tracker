@@ -3,29 +3,29 @@ import '../models/saved_game.dart';
 import '../models/game.dart';
 import '../services/storage_service.dart';
 
-/// Provider for the StorageService
+/// 💾 Provider que entrega el `StorageService`
 final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService();
 });
 
-/// Provider for saved games list
+/// 📚 Provider con la lista de juegos guardados
 final savedGamesProvider = StateNotifierProvider<SavedGamesNotifier, List<SavedGame>>((ref) {
   return SavedGamesNotifier(ref.watch(storageServiceProvider));
 });
 
-/// StateNotifier for managing saved games state
+/// 🧠 StateNotifier que maneja el estado de juegos guardados
 class SavedGamesNotifier extends StateNotifier<List<SavedGame>> {
   final StorageService _storageService;
 
   SavedGamesNotifier(this._storageService) : super([]) {
-    // Load games asynchronously to ensure storage is ready
+    // ⏳ Cargo los juegos de forma asíncrona para asegurar que Hive esté listo
     _initialize();
   }
 
-  /// Initialize and load games
+  /// 🚀 Inicializa y carga los juegos
   Future<void> _initialize() async {
     try {
-      // Small delay to ensure Hive is fully initialized
+      // 💤 Pequeño delay para asegurar que Hive terminó de inicializar
       await Future.delayed(const Duration(milliseconds: 100));
       _loadGames();
     } catch (e) {
@@ -34,11 +34,11 @@ class SavedGamesNotifier extends StateNotifier<List<SavedGame>> {
     }
   }
 
-  /// Loads all saved games from storage
+  /// 📥 Carga todos los juegos guardados desde el almacenamiento
   void _loadGames() {
     try {
       final games = _storageService.getAllGames();
-      state = List.from(games); // Create a new list to trigger update
+      state = List.from(games); // 🔄 Creo una lista nueva para disparar la actualización
       print('Loaded ${games.length} games from storage');
     } catch (e) {
       print('Error loading games: $e');
@@ -46,12 +46,12 @@ class SavedGamesNotifier extends StateNotifier<List<SavedGame>> {
     }
   }
 
-  /// Adds a new game to the saved list
+  /// ➕ Añade un juego nuevo a la lista guardada
   Future<void> addGame(Game game) async {
     try {
       if (_storageService.isGameSaved(game.id)) {
         print('Game ${game.id} already saved');
-        return; // Game already saved
+        return; // ✅ El juego ya estaba guardado, no repito
       }
       
       print('Converting Game to SavedGame: ${game.name}');
@@ -61,7 +61,7 @@ class SavedGamesNotifier extends StateNotifier<List<SavedGame>> {
       await _storageService.saveGame(savedGame);
       print('Game saved to storage, reloading...');
       
-      // Force a reload by creating a new list
+      // 🔄 Fuerzo recarga creando una lista nueva
       final currentGames = _storageService.getAllGames();
       state = List.from(currentGames);
       print('Games reloaded. Total: ${state.length}');
@@ -72,19 +72,19 @@ class SavedGamesNotifier extends StateNotifier<List<SavedGame>> {
     }
   }
 
-  /// Updates an existing saved game
+  /// ✏️ Actualiza un juego guardado existente
   Future<void> updateGame(SavedGame game) async {
     await _storageService.updateGame(game);
     _loadGames();
   }
 
-  /// Deletes a game from the saved list
+  /// 🗑️ Borra un juego de la lista guardada
   Future<void> deleteGame(int gameId) async {
     await _storageService.deleteGame(gameId);
     _loadGames();
   }
 
-  /// Checks if a game is already saved
+  /// ❓ Revisa si un juego ya está guardado
   bool isGameSaved(int gameId) {
     return _storageService.isGameSaved(gameId);
   }

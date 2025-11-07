@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../models/game.dart';
 import '../providers/wishlist_provider.dart';
 
-/// Minimalist card widget for displaying game search results in a grid
-/// Shows only game image and title
+/// 🧩 Tarjeta minimalista para mostrar resultados de búsqueda en una cuadrícula
+/// 🖼️ Solo enseño la imagen del juego y su nombre (simple pero útil)
 class GameSearchCard extends ConsumerWidget {
   final Game game;
   final VoidCallback onTap;
@@ -26,7 +26,7 @@ class GameSearchCard extends ConsumerWidget {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF137FEC), // Azul
+            color: const Color(0xFF137FEC), // 🔵 Azul que estoy usando en toda la app
             width: 2,
           ),
           boxShadow: [
@@ -41,7 +41,7 @@ class GameSearchCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Game Image
+            // 🖼️ Imagen del juego (me gusta que ocupe casi todo)
             Expanded(
               flex: 3,
               child: ClipRRect(
@@ -154,7 +154,7 @@ class GameSearchCard extends ConsumerWidget {
                 ),
               ),
             ),
-            // Game Title
+            // ✏️ Nombre del juego (lo centro para que quede bonito)
             Expanded(
               flex: 1,
               child: Padding(
@@ -182,8 +182,8 @@ class GameSearchCard extends ConsumerWidget {
   }
 }
 
-/// Minimalist card widget for displaying games in wishlist
-/// Shows only game image without title
+/// 💖 Tarjeta minimalista para mostrar juegos en la lista de deseos
+/// 👀 Aquí solo muestro la imagen porque ya sé cuál es el juego
 class GameWishlistCard extends StatelessWidget {
   final Game game;
   final VoidCallback onTap;
@@ -203,7 +203,7 @@ class GameWishlistCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF137FEC), // Azul
+            color: const Color(0xFF137FEC), // 🔵 El mismo azul de la app para que combine
             width: 2,
           ),
           boxShadow: [
@@ -260,8 +260,8 @@ class GameWishlistCard extends StatelessWidget {
   }
 }
 
-/// List view card for wishlist games
-/// Shows game image, title, rating, and release date in a horizontal layout
+/// 📋 Tarjeta en vista de lista para los juegos guardados
+/// 🔍 Incluye imagen, título, nota y fecha en un layout horizontal que estoy practicando
 class GameWishlistListCard extends StatelessWidget {
   final Game game;
   final VoidCallback onTap;
@@ -295,7 +295,7 @@ class GameWishlistListCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Game Image
+            // 🖼️ Imagen del juego (en pequeñito para que quepa en la fila)
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
@@ -335,7 +335,7 @@ class GameWishlistListCard extends StatelessWidget {
                       ),
                     ),
             ),
-            // Game Info
+            // 📝 Info del juego (intento ordenarla de mayor a menor importancia)
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -400,7 +400,7 @@ class GameWishlistListCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Arrow indicator
+            // 👉 Icono de flecha para indicar que se puede tocar
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: Icon(

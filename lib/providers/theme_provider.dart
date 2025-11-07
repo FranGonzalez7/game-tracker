@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.dark);
 
-/// Provider para la configuración de visualización de la wishlist
-/// Almacena el número de columnas del grid (1-5) y si está en vista de lista
+/// 🎛️ Provider para la configuración visual de la wishlist
+/// 📐 Guarda cuántas columnas uso (1-5) y si muestro lista o cuadrícula
 class WishlistViewSettings {
   final int gridColumns;
   final bool isListView;

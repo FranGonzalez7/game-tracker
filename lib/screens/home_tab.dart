@@ -7,14 +7,14 @@ class HomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Contenedor superior debajo de la AppBar
+        // 🧺 Contenedor superior justo bajo la AppBar (todavía está vacío pero me sirve de guía)
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: const Color(0xFF137FEC), // Azul
+                  color: const Color(0xFF137FEC), // 🔵 Azul que uso en casi todo
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -22,7 +22,7 @@ class HomeTab extends StatelessWidget {
             ),
           ),
         ),
-        // Botones en el medio
+        // 🎮 Bloque de botones en el centro (quiero que se sienta como acceso rápido)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
@@ -32,7 +32,7 @@ class HomeTab extends StatelessWidget {
                   icon: Icons.library_books,
                   label: 'Mi Colección',
                   onTap: () {
-                    // TODO: Implementar funcionalidad
+                    // TODO 🎯: implementar esta acción (aún pienso qué mostrar)
                   },
                 ),
               ),
@@ -42,7 +42,7 @@ class HomeTab extends StatelessWidget {
                   icon: Icons.favorite_outline,
                   label: 'Favoritos',
                   onTap: () {
-                    // TODO: Implementar funcionalidad
+                    // TODO ❤️: implementar favoritos desde aquí
                   },
                 ),
               ),
@@ -52,21 +52,21 @@ class HomeTab extends StatelessWidget {
                   icon: Icons.checklist,
                   label: 'Wishlist',
                   onTap: () {
-                    // TODO: Implementar funcionalidad
+                    // TODO ⭐: llevar directo a la wishlist
                   },
                 ),
               ),
             ],
           ),
         ),
-        // Contenedor inferior sobre el BottomAppBar
+        // 📦 Contenedor inferior justo sobre la BottomAppBar (quizás ponga estadísticas luego)
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: const Color(0xFF137FEC), // Azul
+                  color: const Color(0xFF137FEC), // 🔵 Azul para mantener consistencia
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -79,7 +79,7 @@ class HomeTab extends StatelessWidget {
   }
 }
 
-/// Widget para los botones de acción en Home
+/// 🕹️ Widget para los botones de acción de Home (los uso para practicar InkWell y Material)
 class _HomeActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -94,15 +94,15 @@ class _HomeActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.grey[850], // Gris oscuro
+      color: Colors.grey[850], // ⚙️ Gris oscuro para que el azul resalte
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        splashColor: const Color(0xFF137FEC).withOpacity(0.3), // Color del ripple
-        highlightColor: const Color(0xFF137FEC).withOpacity(0.1), // Color cuando se mantiene presionado
+        splashColor: const Color(0xFF137FEC).withOpacity(0.3), // 💧 Color del ripple cuando lo tocan
+        highlightColor: const Color(0xFF137FEC).withOpacity(0.1), // 🌟 Color cuando se mantiene presionado
         child: Container(
-          height: 100, // Altura fija para todos los botones
+          height: 100, // 📏 Altura fija para que todos se vean iguales
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -110,7 +110,7 @@ class _HomeActionButton extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: const Color(0xFF137FEC), // Azul
+                color: const Color(0xFF137FEC), // 🔵 Azul protagonista
                 size: 32,
               ),
               const SizedBox(height: 6),
@@ -124,7 +124,7 @@ class _HomeActionButton extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    height: 1.2, // Altura de línea para asegurar espacio consistente
+                    height: 1.2, // 📐 Altura de línea para mantener el texto ordenado
                   ),
                 ),
               ),

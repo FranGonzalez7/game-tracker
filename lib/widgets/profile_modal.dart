@@ -6,16 +6,16 @@ import 'package:image_picker/image_picker.dart';
 import '../services/profile_service.dart';
 import '../providers/auth_provider.dart';
 
-/// Provider para el servicio de perfil
+/// 🧑‍💻 Provider para el servicio de perfil (así no repito instancias)
 final profileServiceProvider = Provider<ProfileService>((ref) {
   return ProfileService();
 });
 
-/// Modal de perfil de usuario
+/// 🪪 Modal para editar mi perfil de usuario
 class ProfileModal extends ConsumerStatefulWidget {
   const ProfileModal({super.key});
 
-  /// Muestra el modal de perfil
+  /// 👋 Muestra el modal de perfil (lo abro cuando quiero editar mis datos)
   static Future<void> show(BuildContext context, WidgetRef ref) async {
     await showDialog(
       context: context,
@@ -51,29 +51,29 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
     super.dispose();
   }
 
-  /// Carga los datos del perfil actual
+  /// 📥 Carga los datos del perfil actual (todavía me lío con tantas fuentes)
   Future<void> _loadProfile() async {
     final authState = ref.read(authStateProvider);
     final user = authState.value;
     
-    // Intentar cargar datos adicionales del perfil desde Firestore
+    // 🔎 Intento traer datos extra del perfil desde Firestore primero
     try {
       final profileService = ref.read(profileServiceProvider);
       final profile = await profileService.getUserProfile();
       
       if (profile != null) {
-        // Cargar desde Firestore si existe
+        // ☁️ Si existe en Firestore, uso esos datos fresquitos
         if (profile['displayName'] != null) {
           _displayNameController.text = profile['displayName'];
         } else if (user?.displayName != null) {
-          // Fallback a Firebase Auth
+          // 🔁 Si no encuentro nada, regreso a lo que diga Firebase Auth
           _displayNameController.text = user!.displayName!;
         }
         
         if (profile['alias'] != null) {
           _aliasController.text = profile['alias'];
         } else if (user != null) {
-          // Placeholder si no hay alias en Firestore
+          // 🏷️ Cuando no hay alias guardado, invento uno con el UID
           _aliasController.text = user.uid.substring(0, 8);
         }
         
@@ -81,12 +81,12 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
           _bioController.text = profile['bio'];
         }
       } else if (user != null) {
-        // Si no hay perfil en Firestore, usar datos de Firebase Auth
+        // 🙃 Si no hay perfil en Firestore, me quedo con lo que da Firebase Auth
         _displayNameController.text = user.displayName ?? '';
         _aliasController.text = user.uid.substring(0, 8);
       }
     } catch (e) {
-      // Ignorar errores al cargar perfil
+      // 🤫 Si falla la carga, no paro todo, solo uso los datos que tenga a mano
       if (user != null) {
         _displayNameController.text = user.displayName ?? '';
         _aliasController.text = user.uid.substring(0, 8);
@@ -94,11 +94,11 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
     }
   }
 
-  /// Muestra un diálogo para seleccionar la fuente de la imagen
+  /// 📸 Abre un diálogo para elegir de dónde sacar la foto
   Future<void> _pickImage() async {
     if (!mounted) return;
     
-    // Mostrar diálogo para elegir entre cámara o galería
+    // 📂 Saco un diálogo para que elija entre cámara o galería (¡yo siempre voy a galería!)
     final ImageSource? source = await showDialog<ImageSource>(
       context: context,
       builder: (context) => AlertDialog(
@@ -121,14 +121,14 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
       ),
     );
 
-    // Si el usuario canceló o no seleccionó nada, salir
+    // 🙈 Si cancela o no elige nada, pues no hago cambios
     if (source == null) return;
 
-    // Procesar la imagen seleccionada
+    // 🛠️ Si sí selecciona, proceso la imagen elegida
     await _processImage(source);
   }
 
-  /// Procesa la imagen seleccionada desde la fuente especificada
+  /// 🧪 Procesa la imagen seleccionada desde la fuente especificada
   Future<void> _processImage(ImageSource source) async {
     try {
       final XFile? image = await _imagePicker.pickImage(
@@ -155,7 +155,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
     }
   }
 
-  /// Guarda los cambios del perfil
+  /// 💾 Guarda los cambios del perfil (con paciencia porque sube cosas)
   Future<void> _saveProfile() async {
     if (_isLoading) return;
 
@@ -172,25 +172,25 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
         throw Exception('Usuario no autenticado');
       }
 
-      // Subir foto si hay una nueva seleccionada
+      // ☁️ Si hay foto nueva, la subo primero
       if (_selectedImage != null) {
         await profileService.uploadProfilePhoto(_selectedImage!);
       }
 
-      // Actualizar nombre de visualización en Firebase Auth
+      // ✏️ Luego actualizo el nombre que ve Firebase Auth
       if (_displayNameController.text.isNotEmpty) {
         await user.updateDisplayName(_displayNameController.text);
         await user.reload();
       }
 
-      // Actualizar datos adicionales en Firestore
+      // 🪄 También actualizo los datos extra en Firestore
       await profileService.updateProfile(
         displayName: _displayNameController.text.isEmpty ? null : _displayNameController.text,
         alias: _aliasController.text.isEmpty ? null : _aliasController.text,
         bio: _bioController.text.isEmpty ? null : _bioController.text,
       );
 
-      // Refrescar el estado de autenticación
+      // 🔄 Finalmente refresco el estado de autenticación para que se note el cambio
       ref.invalidate(authStateProvider);
 
       if (mounted) {
@@ -251,7 +251,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
+                // 🧢 Cabecera del modal (la pinto azul para que llame la atención)
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -283,13 +283,13 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                   ),
                 ),
 
-                // Content
+                // 📚 Contenido principal (aquí van todos los campos editables)
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        // Foto de perfil
+                        // 🤳 Foto de perfil (me hace ilusión cambiarla seguido)
                         Stack(
                           children: [
                             Container(
@@ -360,7 +360,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Nombre de visualización
+                        // 📝 Nombre de visualización (lo que se ve en la app)
                         TextField(
                           controller: _displayNameController,
                           decoration: const InputDecoration(
@@ -371,7 +371,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Alias
+                        // 🏷️ Alias (trato de que sea único y divertido)
                         TextField(
                           controller: _aliasController,
                           decoration: const InputDecoration(
@@ -382,7 +382,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Bio
+                        // 💬 Bio (escribo algo breve para presentarme)
                         TextField(
                           controller: _bioController,
                           decoration: const InputDecoration(
@@ -394,7 +394,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Botón de guardar
+                        // 💾 Botón de guardar (cuando está cargando se desactiva)
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton(

@@ -4,23 +4,23 @@ import 'wishlist_provider.dart';
 import 'auth_provider.dart';
 import '../models/game.dart';
 
-/// Stream de listas personalizadas del usuario
-/// Reacciona a cambios en el estado de autenticación
+/// 🌊 Stream de listas personalizadas del usuario
+/// 👂 Reacciona a los cambios en el estado de autenticación
 final userListsStreamProvider = StreamProvider<List<Map<String, dynamic>>>((ref) async* {
-  // Escuchar cambios en el estado de autenticación
+  // 👂 Escucho los cambios en el estado de autenticación
   final authState = ref.watch(authStateProvider);
   
-  // Esperar a que el estado de autenticación esté cargado
+  // ⏳ Espero a que el estado esté cargado (me da paz antes de seguir)
   await authState.when(
     data: (_) {},
     loading: () async {},
     error: (_, __) {},
   );
   
-  // Determinar si el usuario está autenticado
+  // 🤔 Reviso si hay alguien autenticado
   final isAuthenticated = authState.value != null;
   
-  // Si el usuario no está autenticado, retornar lista vacía
+  // 🚫 Si no hay usuario, devuelvo una lista vacía y salgo
   if (!isAuthenticated) {
     yield <Map<String, dynamic>>[];
     return;
@@ -29,28 +29,28 @@ final userListsStreamProvider = StreamProvider<List<Map<String, dynamic>>>((ref)
   final firestoreService = ref.watch(firestoreServiceProvider);
 
   try {
-    // Asegurar listas por defecto antes de escuchar
+    // 🧰 Aseguro que existan las listas por defecto antes de escuchar
     try {
       await firestoreService.ensureDefaultLists();
     } catch (e) {
-      // Ignorar errores al crear listas por defecto, puede que ya existan
+      // 🤫 Si falla, lo ignoro porque puede ser que ya existan
       debugPrint('Error al asegurar listas por defecto: $e');
     }
 
-    // Escuchar el stream de listas con manejo de errores
+    // 🎧 Escucho el stream de listas con algo de manejo de errores
     try {
       await for (final lists in firestoreService.getUserListsStream()) {
         yield lists;
       }
     } catch (error) {
       debugPrint('Error al obtener stream de listas: $error');
-      // Capturar errores de permisos y retornar lista vacía
+      // 🔐 Si es un error de permisos, devuelvo lista vacía para no romper nada
       if (error.toString().contains('permission-denied') || 
           error.toString().contains('The caller does not have permission')) {
         yield <Map<String, dynamic>>[];
         return;
       }
-      // Para otros errores, re-lanzar el error
+      // 🚨 Otros errores sí los relanzo para investigarlos
       rethrow;
     }
   } catch (error) {
@@ -64,16 +64,16 @@ final userListsStreamProvider = StreamProvider<List<Map<String, dynamic>>>((ref)
   }
 });
 
-/// Stream de juegos de una lista específica
-/// Reacciona a cambios en el estado de autenticación
+/// 🌊 Stream con los juegos de una lista específica
+/// 👂 También reacciona a los cambios de autenticación
 final listGamesStreamProvider = StreamProvider.family<List<Game>, String>((ref, listId) async* {
-  // Escuchar cambios en el estado de autenticación
+  // 👂 Escucho el estado de autenticación
   final authState = ref.watch(authStateProvider);
   
-  // Determinar si el usuario está autenticado
+  // 🤔 Reviso si hay un usuario logueado
   final isAuthenticated = authState.value != null;
   
-  // Si el usuario no está autenticado, retornar lista vacía
+  // 🚫 Si no hay usuario, retorno una lista vacía y fin
   if (!isAuthenticated) {
     yield <Game>[];
     return;
@@ -86,18 +86,18 @@ final listGamesStreamProvider = StreamProvider.family<List<Game>, String>((ref, 
       yield games;
     }
   } catch (error) {
-    // Capturar errores de permisos y retornar lista vacía
+    // 🔐 Si hay errores de permisos, regreso lista vacía
     if (error.toString().contains('permission-denied') ||
         error.toString().contains('The caller does not have permission')) {
       yield <Game>[];
       return;
     }
-    // Para otros errores, re-lanzar el error
+    // 🚨 Otros errores los relanzo para que Riverpod los propague
     rethrow;
   }
 });
 
-/// Clase para identificar un juego en una lista
+/// 🆔 Clase sencilla para identificar un juego dentro de una lista
 class GameListKey {
   final String listId;
   final int gameId;
@@ -119,7 +119,7 @@ class GameListKey {
   int get hashCode => listId.hashCode ^ gameId.hashCode;
 }
 
-/// Provider que verifica si un juego está en una lista específica
+/// ❓ Provider que revisa si un juego está en una lista específica
 final isGameInListProvider = FutureProvider.family<bool, GameListKey>((ref, key) async {
   final firestoreService = ref.watch(firestoreServiceProvider);
   
