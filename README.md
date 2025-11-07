@@ -1,6 +1,6 @@
 # 🎮 Game Tracker
 
-> Una app Flutter hecha con mucho cariño para llevar un registro de los videojuegos que vas jugando, terminando o soñando con jugar. Todo pensado en castellano y con toques de Material 3.
+> Una app Flutter hecha con alma de Gamer para llevar un registro de los videojuegos que vas jugando, terminando o añadiendo a tus listas personalizadas. 
 
 ## ✨ Qué puedes hacer
 - 🔍 Buscar juegos usando la API de RAWG.io y ver sus detalles.
@@ -42,7 +42,7 @@
 - `lib/screens/` y `lib/widgets/` → UI modular organizada por pantallas y componentes reutilizables.
 - `assets/` → Imágenes e iconos usados en la interfaz.
 
-## 🔐 Autenticación en pocas palabras
+## 🔐 Autenticación 
 - Alta y login con correo y contraseña usando Firebase Authentication.  
 - Sesiones persistentes automáticamente.  
 - Gestión de perfil (nombre, alias, bio y foto) desde la propia app.  
