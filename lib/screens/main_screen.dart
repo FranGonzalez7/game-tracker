@@ -4,9 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'search_tab.dart';
 import 'home_tab.dart';
-import 'wishlist_tab.dart';
 import 'lists_tab.dart';
 import 'settings_tab.dart';
+import 'user_tab.dart';
 import '../widgets/profile_modal.dart';
 import '../providers/auth_provider.dart';
 import '../providers/wishlist_provider.dart';
@@ -21,20 +21,20 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  int _currentIndex = 2; // 🏠 Arranco en Home por defecto porque es mi pestaña favorita
+  int _currentIndex = 2; // 🏠 Arranco en Home por defecto
 
-  static const _titles = ['Wishlist', 'Search', 'Home', 'Lists', 'Settings'];
+  static const _titles = ['Listas', 'Buscar', 'Inicio', 'Usuario', 'Ajustes'];
 
   Widget _buildBody() {
     switch (_currentIndex) {
       case 0:
-        return const WishlistTab();
+        return const ListsTab();
       case 1:
         return const SearchTab();
       case 2:
         return const HomeTab();
       case 3:
-        return const ListsTab();
+        return const UserTab();
       case 4:
         return const SettingsTab();
       default:
@@ -116,7 +116,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ),
       ),
       body: _buildBody(),
-      floatingActionButton: _currentIndex == 3
+      floatingActionButton: _currentIndex == 0
           ? FloatingActionButton.extended(
               onPressed: () async {
                 final name = await showDialog<String>(
@@ -191,35 +191,35 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _BottomNavIcon(
-                  icon: Icons.sports_esports,
+                  icon: Icons.receipt_long_outlined,
                   isSelected: _currentIndex == 0,
                   onTap: () => setState(() => _currentIndex = 0),
-                  tooltip: 'Wishlist',
+                  tooltip: 'Listas',
+                  imagePath: 'assets/coleccion.png',
                 ),
                 _BottomNavIcon(
                   icon: Icons.search,
                   isSelected: _currentIndex == 1,
                   onTap: () => setState(() => _currentIndex = 1),
-                  tooltip: 'Search',
+                  tooltip: 'Buscar',
                 ),
                 _BottomNavIcon(
                   icon: Icons.home_outlined,
                   isSelected: _currentIndex == 2,
                   onTap: () => setState(() => _currentIndex = 2),
-                  tooltip: 'Home',
+                  tooltip: 'Inicio',
                 ),
                 _BottomNavIcon(
-                  icon: Icons.receipt_long_outlined,
+                  icon: Icons.person_outline,
                   isSelected: _currentIndex == 3,
                   onTap: () => setState(() => _currentIndex = 3),
-                  tooltip: 'Lists',
-                  imagePath: 'assets/coleccion.png',
+                  tooltip: 'Usuario',
                 ),
                 _BottomNavIcon(
                   icon: Icons.settings_outlined,
                   isSelected: _currentIndex == 4,
                   onTap: () => setState(() => _currentIndex = 4),
-                  tooltip: 'Settings',
+                  tooltip: 'Ajustes',
                 ),
               ],
             ),

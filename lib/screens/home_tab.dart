@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'list_detail_screen.dart';
+
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
 
@@ -32,7 +34,14 @@ class HomeTab extends StatelessWidget {
                   icon: Icons.library_books,
                   label: 'Mi Colección',
                   onTap: () {
-                    // TODO 🎯: implementar esta acción (aún pienso qué mostrar)
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ListDetailScreen(
+                          listId: 'my_collection',
+                          fallbackName: 'Mi colección',
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -42,7 +51,14 @@ class HomeTab extends StatelessWidget {
                   icon: Icons.favorite_outline,
                   label: 'Favoritos',
                   onTap: () {
-                    // TODO ❤️: implementar favoritos desde aquí
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ListDetailScreen(
+                          listId: 'favorites',
+                          fallbackName: 'Mis juegos favoritos',
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -52,7 +68,14 @@ class HomeTab extends StatelessWidget {
                   icon: Icons.checklist,
                   label: 'Wishlist',
                   onTap: () {
-                    // TODO ⭐: llevar directo a la wishlist
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ListDetailScreen(
+                          listId: 'wishlist',
+                          fallbackName: 'Wishlist',
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),

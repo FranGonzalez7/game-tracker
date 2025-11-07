@@ -111,9 +111,13 @@ class AddToListModal extends ConsumerWidget {
                       final listName = list['name'] as String? ?? 'Sin nombre';
                       
                       IconData leadingIcon = Icons.list_alt_outlined;
-                      if (listName == 'Mis juegos favoritos') {
+                      if (listId == 'favorites') {
                         leadingIcon = Icons.favorite_border;
-                      } else if (listName.startsWith('Jugados en ')) {
+                      } else if (listId == 'my_collection') {
+                        leadingIcon = Icons.inventory_2_outlined;
+                      } else if (listId == 'wishlist') {
+                        leadingIcon = Icons.bookmark_border;
+                      } else if (listId.startsWith('played_year_')) {
                         leadingIcon = Icons.calendar_month;
                       }
 

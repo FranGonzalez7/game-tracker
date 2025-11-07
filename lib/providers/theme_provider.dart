@@ -3,34 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.dark);
 
-/// 🎛️ Provider para la configuración visual de la wishlist
+/// 🎛️ Configuración visual compartida para las pantallas de listas
 /// 📐 Guarda cuántas columnas uso (1-5) y si muestro lista o cuadrícula
-class WishlistViewSettings {
+class ListViewSettings {
   final int gridColumns;
   final bool isListView;
 
-  WishlistViewSettings({
+  ListViewSettings({
     this.gridColumns = 3,
     this.isListView = false,
   });
 
-  WishlistViewSettings copyWith({
+  ListViewSettings copyWith({
     int? gridColumns,
     bool? isListView,
   }) {
-    return WishlistViewSettings(
+    return ListViewSettings(
       gridColumns: gridColumns ?? this.gridColumns,
       isListView: isListView ?? this.isListView,
     );
   }
 }
 
-final wishlistViewSettingsProvider = StateNotifierProvider<WishlistViewSettingsNotifier, WishlistViewSettings>((ref) {
-  return WishlistViewSettingsNotifier();
+final listViewSettingsProvider = StateNotifierProvider<ListViewSettingsNotifier, ListViewSettings>((ref) {
+  return ListViewSettingsNotifier();
 });
 
-class WishlistViewSettingsNotifier extends StateNotifier<WishlistViewSettings> {
-  WishlistViewSettingsNotifier() : super(WishlistViewSettings());
+class ListViewSettingsNotifier extends StateNotifier<ListViewSettings> {
+  ListViewSettingsNotifier() : super(ListViewSettings());
 
   void setGridColumns(int columns) {
     state = state.copyWith(gridColumns: columns, isListView: false);

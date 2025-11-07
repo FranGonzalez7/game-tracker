@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/lists_provider.dart';
+import 'list_detail_screen.dart';
 
 class ListsTab extends ConsumerWidget {
   const ListsTab({super.key});
@@ -29,9 +30,13 @@ class ListsTab extends ConsumerWidget {
             final listId = list['id'] as String;
             final name = list['name'] as String? ?? 'Sin nombre';
             IconData leadingIcon = Icons.list_alt_outlined;
-            if (name == 'Mis juegos favoritos') {
+            if (listId == 'favorites') {
               leadingIcon = Icons.favorite_border;
-            } else if (name.startsWith('Jugados en ')) {
+            } else if (listId == 'my_collection') {
+              leadingIcon = Icons.inventory_2_outlined;
+            } else if (listId == 'wishlist') {
+              leadingIcon = Icons.bookmark_border;
+            } else if (listId.startsWith('played_year_')) {
               leadingIcon = Icons.calendar_month;
             }
             return Card(
@@ -42,7 +47,14 @@ class ListsTab extends ConsumerWidget {
               ),
               child: InkWell(
                 onTap: () {
-                  // TODO 🧭: navegar al detalle de la lista (aún no defino esa pantalla)
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ListDetailScreen(
+                        listId: listId,
+                        fallbackName: name,
+                      ),
+                    ),
+                  );
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Column(
