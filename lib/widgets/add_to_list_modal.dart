@@ -1,8 +1,8 @@
+import '../providers/wishlist_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game.dart';
 import '../providers/lists_provider.dart';
-import '../providers/wishlist_provider.dart';
 
 /// 🧺 Modal para elegir una lista y añadir un juego (todavía lo mantengo simple)
 class AddToListModal extends ConsumerWidget {
@@ -126,18 +126,7 @@ class AddToListModal extends ConsumerWidget {
                         listName: listName,
                         leadingIcon: leadingIcon,
                         game: game,
-                        onAdded: () {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${game.name} añadido a $listName'),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        },
-                        onUpdated: () {
-                          // 🔄 Invalidar el provider para refrescar el estado
+                        onStatusChanged: (isNowInList) {
                           ref.invalidate(isGameInListProvider(GameListKey(listId: listId, gameId: game.id)));
                         },
                       );
@@ -190,16 +179,14 @@ class _ListTileButton extends ConsumerStatefulWidget {
   final String listName;
   final IconData leadingIcon;
   final Game game;
-  final VoidCallback onAdded;
-  final VoidCallback onUpdated;
+  final ValueChanged<bool> onStatusChanged;
 
   const _ListTileButton({
     required this.listId,
     required this.listName,
     required this.leadingIcon,
     required this.game,
-    required this.onAdded,
-    required this.onUpdated,
+    required this.onStatusChanged,
   });
 
   @override
@@ -209,29 +196,24 @@ class _ListTileButton extends ConsumerStatefulWidget {
 class _ListTileButtonState extends ConsumerState<_ListTileButton> {
   bool _isLoading = false;
 
-  Future<void> _addToList() async {
+  Future<void> _toggleInList(bool isCurrentlyInList) async {
     if (_isLoading) return;
 
     setState(() => _isLoading = true);
 
     try {
       final firestoreService = ref.read(firestoreServiceProvider);
-      await firestoreService.addGameToList(widget.listId, widget.game);
-      
+      if (isCurrentlyInList) {
+        await firestoreService.removeGameFromList(widget.listId, widget.game.id);
+      } else {
+        await firestoreService.addGameToList(widget.listId, widget.game);
+      }
+
       if (mounted) {
-        widget.onAdded();
-        widget.onUpdated(); // Invalidar el provider para refrescar el estado
+        widget.onStatusChanged(!isCurrentlyInList);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al añadir a la lista: $e'),
-            duration: const Duration(seconds: 3),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      debugPrint('Error al actualizar la lista "${widget.listId}": $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -283,16 +265,11 @@ class _ListTileButtonState extends ConsumerState<_ListTileButton> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : isInList
-                    ? const Icon(
-                        Icons.check_circle,
-                        color: Color(0xFF4CAF50),
-                      )
-                    : const Icon(
-                        Icons.add_circle_outline,
-                        color: const Color(0xFF137FEC),
-                      ),
-            onTap: isInList ? null : _addToList,
+                : Icon(
+                    isInList ? Icons.remove_circle_outline : Icons.add_circle_outline,
+                    color: isInList ? const Color(0xFFFF9800) : const Color(0xFF137FEC),
+                  ),
+            onTap: () => _toggleInList(isInList),
           ),
         );
       },
@@ -342,7 +319,7 @@ class _ListTileButtonState extends ConsumerState<_ListTileButton> {
                 ),
           ),
           trailing: const Icon(Icons.add_circle_outline, color: Color(0xFF137FEC)),
-          onTap: _addToList,
+          onTap: () => _toggleInList(false),
         ),
       ),
     );
