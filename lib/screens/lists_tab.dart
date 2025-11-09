@@ -106,7 +106,11 @@ class _ListHeader extends ConsumerWidget {
         final subtitle = gameCount == 1 ? '1 juego' : '$gameCount juegos';
         
         return ListTile(
-          title: Text(name),
+          title: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           subtitle: Text(
             subtitle,
             style: const TextStyle(
@@ -121,13 +125,21 @@ class _ListHeader extends ConsumerWidget {
         );
       },
       loading: () => ListTile(
-        title: Text(name),
+        title: Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
         trailing: const Icon(Icons.chevron_right),
         mouseCursor: SystemMouseCursors.basic,
       ),
       error: (_, __) => ListTile(
-        title: Text(name),
+        title: Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
         trailing: const Icon(Icons.chevron_right),
         mouseCursor: SystemMouseCursors.basic,

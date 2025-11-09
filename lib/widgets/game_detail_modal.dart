@@ -97,32 +97,27 @@ class _GameDetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isInWishlistAsync = ref.watch(wishlistCheckerProvider(game.id));
-    
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🖼️ Imagen grande del juego (me gusta que sea lo primero)
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom + 10;
+
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: SizedBox(
+            width: double.infinity,
+            height: 250,
             child: game.backgroundImage != null
                 ? CachedNetworkImage(
                     imageUrl: game.backgroundImage!,
-                    width: double.infinity,
-                    height: 250,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      width: double.infinity,
-                      height: 250,
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: const Center(
                         child: CircularProgressIndicator(),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      width: double.infinity,
-                      height: 250,
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: Icon(
                         Icons.videogame_asset,
@@ -132,8 +127,6 @@ class _GameDetailContent extends ConsumerWidget {
                     ),
                   )
                 : Container(
-                    width: double.infinity,
-                    height: 250,
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -145,14 +138,13 @@ class _GameDetailContent extends ConsumerWidget {
                     ),
                   ),
           ),
-
-          // 📚 Información del juego
-          Padding(
+        ),
+        Expanded(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🏷️ Título del juego
                 Text(
                   game.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -163,8 +155,6 @@ class _GameDetailContent extends ConsumerWidget {
                       ),
                 ),
                 const SizedBox(height: 16),
-
-                // ⭐ Valoración con icono para añadir/quitar de la wishlist
                 if (game.rating != null) ...[
                   Row(
                     children: [
@@ -258,8 +248,6 @@ class _GameDetailContent extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                 ],
-
-                // 📅 Fecha de lanzamiento
                 if (game.released != null) ...[
                   Row(
                     children: [
@@ -282,8 +270,6 @@ class _GameDetailContent extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                 ],
-
-                // 🎮 Plataformas disponibles
                 if (game.platforms != null && game.platforms!.isNotEmpty) ...[
                   Text(
                     'Plataformas',
@@ -321,63 +307,78 @@ class _GameDetailContent extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
                 ],
-
-                // ➕ Botón para añadir a listas personalizadas
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      AddToListModal.show(context, game);
-                    },
-                    icon: const Icon(Icons.playlist_add),
-                    label: const Text(
-                      'Añadir a Listas',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      side: const BorderSide(
-                        color: const Color(0xFF137FEC),
-                        width: 2,
-                      ),
-                      foregroundColor: const Color(0xFF137FEC),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // ❌ Botón para cerrar el modal
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      backgroundColor: const Color(0xFF137FEC),
-                    ),
-                    child: const Text(
-                      'Cerrar',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        Container(
+          padding: EdgeInsets.fromLTRB(20, 16, 20, bottomPadding),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    AddToListModal.show(context, game);
+                  },
+                  icon: const Icon(Icons.playlist_add),
+                  label: const Text(
+                    'Añadir a Listas',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    side: const BorderSide(
+                      color: Color(0xFF137FEC),
+                      width: 2,
+                    ),
+                    foregroundColor: const Color(0xFF137FEC),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: const Color(0xFF137FEC),
+                  ),
+                  child: const Text(
+                    'Cerrar',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

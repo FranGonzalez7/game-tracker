@@ -277,6 +277,7 @@ class GameWishlistListCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 96,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
@@ -301,47 +302,43 @@ class GameWishlistListCard extends StatelessWidget {
                 topLeft: Radius.circular(12),
                 bottomLeft: Radius.circular(12),
               ),
-              child: game.backgroundImage != null
-                  ? CachedNetworkImage(
-                      imageUrl: game.backgroundImage!,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: 80,
-                        height: 80,
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        child: const Center(
-                          child: CircularProgressIndicator(),
+              child: SizedBox(
+                width: 96,
+                height: double.infinity,
+                child: game.backgroundImage != null
+                    ? CachedNetworkImage(
+                        imageUrl: game.backgroundImage!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        width: 80,
-                        height: 80,
+                        errorWidget: (context, url, error) => Container(
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.videogame_asset,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                          ),
+                        ),
+                      )
+                    : Container(
                         color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         child: Icon(
                           Icons.videogame_asset,
                           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                         ),
                       ),
-                    )
-                  : Container(
-                      width: 80,
-                      height: 80,
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.videogame_asset,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                      ),
-                    ),
+              ),
             ),
             // 📝 Info del juego (intento ordenarla de mayor a menor importancia)
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       game.name,
@@ -351,11 +348,11 @@ class GameWishlistListCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (game.rating != null) ...[
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(
@@ -376,7 +373,7 @@ class GameWishlistListCard extends StatelessWidget {
                       ),
                     ],
                     if (game.released != null) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Row(
                         children: [
                           Icon(
