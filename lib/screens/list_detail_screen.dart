@@ -5,7 +5,10 @@ import '../models/game.dart';
 import '../providers/lists_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/game_detail_modal.dart';
+import '../providers/wishlist_provider.dart';
 import '../widgets/game_search_card.dart';
+
+enum _ListMenuAction { clear }
 
 /// 🗂️ Pantalla genérica para mostrar el contenido de cualquier lista
 /// 📋 Reutiliza la misma experiencia que teníamos en la wishlist
@@ -248,6 +251,64 @@ class ListDetailScreen extends ConsumerWidget {
             letterSpacing: -0.2,
           ),
         ),
+        actions: [
+          PopupMenuButton<_ListMenuAction>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Opciones de lista',
+            itemBuilder: (context) => const [
+              PopupMenuItem<_ListMenuAction>(
+                value: _ListMenuAction.clear,
+                child: Text('Vaciar lista'),
+              ),
+            ],
+            onSelected: (action) async {
+              if (action == _ListMenuAction.clear) {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Vaciar lista'),
+                    content: const Text('¿Seguro que quieres eliminar todos los juegos de esta lista?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancelar'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Vaciar'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm == true) {
+                  try {
+                    final firestoreService = ref.read(firestoreServiceProvider);
+                    await firestoreService.clearList(listId);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Lista "$listName" vaciada'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al vaciar lista: $e'),
+                          duration: const Duration(seconds: 3),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              }
+            },
+          ),
+        ],
       ),
       body: gamesAsync.when(
         data: _buildGames,

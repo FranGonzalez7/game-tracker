@@ -241,6 +241,31 @@ class FirestoreService {
     await listRef.update({'updatedAt': FieldValue.serverTimestamp()});
   }
 
+  /// 🧹 Elimina todos los juegos de una lista personalizada
+  Future<void> clearList(String listId) async {
+    if (!isAuthenticated) {
+      throw Exception('Usuario no autenticado');
+    }
+
+    final gamesRef = _getListGamesCollection(listId);
+    final snapshot = await gamesRef.get();
+
+    if (snapshot.docs.isEmpty) {
+      final listRef = _getListDocument(listId);
+      await listRef.update({'updatedAt': FieldValue.serverTimestamp()});
+      return;
+    }
+
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+
+    final listRef = _getListDocument(listId);
+    await listRef.update({'updatedAt': FieldValue.serverTimestamp()});
+  }
+
   /// 📡 Obtiene los juegos de una lista (stream)
   Stream<List<Game>> getListGamesStream(String listId) {
     if (!isAuthenticated) {
