@@ -3,7 +3,7 @@
 > Una app Flutter hecha con alma de Gamer para llevar un registro de los videojuegos que vas jugando, terminando o añadiendo a tus listas personalizadas. 
 
 ## ✨ Qué puedes hacer
-- 🔍 Buscar juegos usando la API de RAWG.io y ver sus detalles.
+- 🔍 Buscar juegos gracias a un backend propio que consume la API de IGDB.
 - 💖 Guardar favoritos en la wishlist y organizar listas personalizadas.
 - 📅 Registrar fechas de inicio y finalización de tus partidas.
 - ⭐ Añadir notas y valoraciones propias para no olvidar qué sentiste.
@@ -23,11 +23,17 @@
      - iOS: coloca `GoogleService-Info.plist` en `ios/Runner/`.  
    - Activa el método de autenticación *Email/Password* (Authentication ➜ Sign-in method).
 
-3. **Consigue tu API key de RAWG.io**  
-   - Regístrate en [RAWG.io](https://rawg.io/apidocs) y copia la clave gratuita.  
-   - Duplica el archivo `.env.example` como `.env` en la raíz y añade `RAWG_API_KEY=tu_clave_aquí`.
+3. **Levanta el backend proxy de IGDB**  
+   - Ve a `server/`, copia `env.example` como `.env` y completa `TWITCH_CLIENT_ID` + `TWITCH_CLIENT_SECRET`.  
+   - Instala dependencias `npm install` y arranca con `npm run dev` (por defecto en `http://localhost:3000`).
 
-4. **Instala dependencias y ejecuta**  
+4. **Configura la app Flutter**  
+   - Copia `env.example` como `.env` en la raíz y define `BACKEND_BASE_URL` apuntando al backend.  
+     - Emulador Android: `http://10.0.2.2:3000`  
+     - Web/desktop: `http://localhost:3000`  
+     - Dispositivo físico: `http://<IP_de_tu_PC>:3000`
+
+5. **Instala dependencias y ejecuta**  
    ```bash
    flutter pub get
    flutter run
@@ -35,9 +41,8 @@
 
 > 💡 Si algo falla en el arranque, revisa la consola: la app avisa cuando falta la configuración de Firebase o la API key.
 
-## 🧭 Estructura del proyecto
 - `lib/models/` → Modelos como `Game` y `SavedGame` (datos puros).
-- `lib/services/` → Servicios para RAWG, Firebase, Firestore y Hive.
+- `lib/services/` → Servicios para IGDB (vía backend), Firebase, Firestore y Hive.
 - `lib/providers/` → Providers de Riverpod para manejar estado y lógica.
 - `lib/screens/` y `lib/widgets/` → UI modular organizada por pantallas y componentes reutilizables.
 - `assets/` → Imágenes e iconos usados en la interfaz.

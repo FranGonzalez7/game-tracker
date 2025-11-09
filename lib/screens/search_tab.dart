@@ -4,7 +4,7 @@ import '../providers/game_provider.dart';
 import '../widgets/game_search_card.dart';
 import '../widgets/game_detail_modal.dart';
 
-/// 🧭 Pestaña para buscar juegos usando la API de RAWG (todavía aprendo a paginar)
+/// 🧭 Pestaña para buscar juegos usando el backend que habla con la API de IGDB
 /// 🔍 Muestra una barra de búsqueda y la lista de resultados que voy encontrando
 class SearchTab extends ConsumerStatefulWidget {
   const SearchTab({super.key});

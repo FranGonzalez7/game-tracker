@@ -1,30 +1,34 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// 🌱 Archivo de configuración para las claves y endpoints de la API
-/// 
-/// 📌 Recuerda: la API key se carga desde el archivo `.env`
-/// ✍️ Copia `.env.example` a `.env` y añade tu clave de RAWG.io
-/// 👉 La clave gratis se consigue aquí: https://rawg.io/apidocs
+/// 🌱 Archivo de configuración para los endpoints del backend propio
+///
+/// 📌 Recuerda: la URL base se carga desde el archivo `.env`
+/// ✍️ Copia `.env.example` a `.env` y añade `BACKEND_BASE_URL=https://tu-servidor.com`
 class ApiConfig {
-  static const String baseUrl = 'https://api.rawg.io/api';
-  
-  /// 🤓 Consigue la API key de RAWG desde las variables de entorno
-  /// 😬 Lanza una excepción si no la encontramos (para que no se nos pase)
-  static String get rawgApiKey {
-    final apiKey = dotenv.env['RAWG_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty) {
+  /// 🌍 Lee la URL base del backend proxy (por ejemplo: https://mi-servidor.com)
+  static String get backendBaseUrl {
+    final baseUrl = dotenv.env['BACKEND_BASE_URL'];
+    if (baseUrl == null || baseUrl.isEmpty) {
       throw Exception(
-        'RAWG_API_KEY not found in .env file. '
-        'Please create a .env file with your API key. '
-        'See .env.example for reference.'
+        'BACKEND_BASE_URL not found in .env file. '
+        'Please create a .env file with your backend base URL. '
+        'See .env.example for reference.',
       );
     }
-    return apiKey;
+    return baseUrl;
   }
-  
-  /// 🧩 Devuelve la URL completa de la API incluyendo la key
-  static String getUrl(String endpoint) {
-    return '$baseUrl$endpoint?key=$rawgApiKey';
+
+  /// 🧭 Construye un `Uri` a partir del path del backend y parámetros opcionales
+  static Uri buildUri(String path, [Map<String, String>? queryParameters]) {
+    final normalizedBase = backendBaseUrl.endsWith('/')
+        ? backendBaseUrl.substring(0, backendBaseUrl.length - 1)
+        : backendBaseUrl;
+    final normalizedPath = path.startsWith('/') ? path : '/$path';
+    final uri = Uri.parse('$normalizedBase$normalizedPath');
+    if (queryParameters == null || queryParameters.isEmpty) {
+      return uri;
+    }
+    return uri.replace(queryParameters: queryParameters);
   }
 }
 
