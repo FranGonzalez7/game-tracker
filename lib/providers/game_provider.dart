@@ -3,7 +3,7 @@ import '../models/game.dart';
 import '../services/igdb_service.dart';
 
 /// 🕹️ Provider del `IgdbService` (así lo puedo pedir desde cualquier parte)
-final igdbServiceProvider = Provider<IgdbService>((ref) {
+final gameServiceProvider = Provider<IgdbService>((ref) {
   return IgdbService();
 });
 
@@ -36,6 +36,14 @@ final searchFiltersProvider = StateProvider<SearchFilters>((ref) {
   return const SearchFilters();
 });
 
+/// 🪜 Provider que trae la lista de plataformas desde la API (tarda un poquito)
+/// 📝 Por ahora devuelve una lista vacía ya que las plataformas se extraen de los resultados de búsqueda
+final platformsProvider = FutureProvider<List<String>>((ref) async {
+  // Las plataformas se obtienen dinámicamente de los resultados de búsqueda
+  // usando el availablePlatformsProvider
+  return [];
+});
+
 /// 🧮 Provider que calcula las plataformas disponibles en los resultados actuales
 final availablePlatformsProvider = Provider<List<String>>((ref) {
   final searchResults = ref.watch(unfilteredGameSearchProvider);
@@ -55,16 +63,16 @@ final availablePlatformsProvider = Provider<List<String>>((ref) {
   );
 });
 
-/// 🔍 Provider con los resultados sin filtrar (tal como vienen del backend IGDB)
+/// 🔍 Provider con los resultados sin filtrar (tal como vienen de la API)
 final unfilteredGameSearchProvider = StateNotifierProvider<UnfilteredGameSearchNotifier, AsyncValue<List<Game>>>((ref) {
-  return UnfilteredGameSearchNotifier(ref.watch(igdbServiceProvider));
+  return UnfilteredGameSearchNotifier(ref.watch(gameServiceProvider));
 });
 
 /// 🧠 `StateNotifier` para manejar el estado de la búsqueda sin filtros
 class UnfilteredGameSearchNotifier extends StateNotifier<AsyncValue<List<Game>>> {
-  final IgdbService _igdbService;
+  final IgdbService _gameService;
 
-  UnfilteredGameSearchNotifier(this._igdbService) : super(const AsyncValue.data([]));
+  UnfilteredGameSearchNotifier(this._gameService) : super(const AsyncValue.data([]));
 
   /// 🔎 Busca juegos según el texto que escribe la persona
   Future<void> searchGames(String query) async {
@@ -77,7 +85,7 @@ class UnfilteredGameSearchNotifier extends StateNotifier<AsyncValue<List<Game>>>
     state = const AsyncValue.loading();
     
     try {
-      final games = await _igdbService.searchGames(trimmedQuery);
+      final games = await _gameService.searchGames(trimmedQuery);
       // ✂️ Luego filtro para quedarme con lo que se siente más relevante
       final filteredGames = _filterRelevantResults(games, trimmedQuery);
       state = AsyncValue.data(filteredGames);

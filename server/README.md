@@ -36,3 +36,4 @@ Backend ligero en Node.js que actúa como intermediario entre la aplicación Flu
 - Puedes desplegar este servidor en servicios como Render, Railway, Fly.io o cualquier plataforma que soporte Node.js.
 
 
+
