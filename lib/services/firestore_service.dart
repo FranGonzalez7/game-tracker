@@ -105,10 +105,20 @@ class FirestoreService {
     }
     final listsRef = _getListsCollection();
     final now = FieldValue.serverTimestamp();
+    
+    // 📊 Obtengo el máximo order actual para poner la nueva lista al final
+    final snapshot = await listsRef.orderBy('order', descending: true).limit(1).get();
+    int maxOrder = 0;
+    if (snapshot.docs.isNotEmpty) {
+      final data = snapshot.docs.first.data();
+      maxOrder = (data['order'] as int?) ?? 0;
+    }
+    
     return await listsRef.add({
       'name': name,
       'createdAt': now,
       'updatedAt': now,
+      'order': maxOrder + 1, // 📍 La nueva lista va al final
     });
   }
 
@@ -158,17 +168,63 @@ class FirestoreService {
     if (!isAuthenticated) {
       return Stream.value(<Map<String, dynamic>>[]);
     }
-    final listsRef = _getListsCollection().orderBy('createdAt', descending: true);
-    return listsRef.snapshots().map((snapshot) => snapshot.docs.map((d) {
-          final data = d.data();
-          return {
-            'id': d.id,
-            'name': data['name'] as String? ?? 'Sin nombre',
-            'isDefault': data['isDefault'] as bool? ?? false,
-            'createdAt': data['createdAt'],
-            'updatedAt': data['updatedAt'],
-          };
-        }).toList());
+    // 📊 Ordeno por 'order' si existe, sino por 'createdAt' como fallback
+    final listsRef = _getListsCollection();
+    return listsRef.snapshots().map((snapshot) {
+      final lists = snapshot.docs.map((d) {
+        final data = d.data();
+        return {
+          'id': d.id,
+          'name': data['name'] as String? ?? 'Sin nombre',
+          'isDefault': data['isDefault'] as bool? ?? false,
+          'createdAt': data['createdAt'],
+          'updatedAt': data['updatedAt'],
+          'order': data['order'] as int?,
+        };
+      }).toList();
+      
+      // 🔄 Ordeno manualmente: primero por 'order', luego por 'createdAt' como fallback
+      lists.sort((a, b) {
+        final orderA = a['order'] as int?;
+        final orderB = b['order'] as int?;
+        
+        if (orderA != null && orderB != null) {
+          return orderA.compareTo(orderB);
+        }
+        if (orderA != null) return -1;
+        if (orderB != null) return 1;
+        
+        // Si no tienen order, uso createdAt como fallback
+        final createdAtA = a['createdAt'] as Timestamp?;
+        final createdAtB = b['createdAt'] as Timestamp?;
+        if (createdAtA != null && createdAtB != null) {
+          return createdAtB.compareTo(createdAtA); // Más reciente primero
+        }
+        return 0;
+      });
+      
+      return lists;
+    });
+  }
+  
+  /// 🔄 Actualiza el orden de las listas
+  Future<void> updateListsOrder(List<String> listIds) async {
+    if (!isAuthenticated) {
+      throw Exception('Usuario no autenticado');
+    }
+    
+    final listsRef = _getListsCollection();
+    final batch = _firestore.batch();
+    
+    for (int i = 0; i < listIds.length; i++) {
+      final listRef = listsRef.doc(listIds[i]);
+      batch.update(listRef, {
+        'order': i,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+    
+    await batch.commit();
   }
 
   /// 📂 Obtiene la referencia a la colección de juegos de una lista
@@ -344,6 +400,25 @@ class FirestoreService {
 
     if (data == null || !data.containsKey('createdAt')) {
       payload['createdAt'] = FieldValue.serverTimestamp();
+    }
+    
+    // 📊 Si no tiene 'order', le asigno uno basado en el ID de la lista
+    if (data == null || !data.containsKey('order')) {
+      int defaultOrder = 0;
+      if (listId == _favoritesListId) {
+        defaultOrder = 0;
+      } else if (listId == _myCollectionListId) {
+        defaultOrder = 1;
+      } else if (listId == _wishlistListId) {
+        defaultOrder = 2;
+      } else if (listId.startsWith('played_year_')) {
+        defaultOrder = 3;
+      } else {
+        // Para otras listas, uso un número alto para que vayan al final
+        final allLists = await listsRef.get();
+        defaultOrder = allLists.docs.length;
+      }
+      payload['order'] = defaultOrder;
     }
 
     await docRef.set(payload, SetOptions(merge: true));

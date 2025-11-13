@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/lists_provider.dart';
+import '../providers/wishlist_provider.dart';
 import 'list_detail_screen.dart';
 
 class ListsTab extends ConsumerWidget {
@@ -9,7 +10,18 @@ class ListsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final listsAsync = ref.watch(userListsStreamProvider);
+    ref.listen<AsyncValue<List<Map<String, dynamic>>>>(
+      userListsStreamProvider,
+      (previous, next) {
+        next.whenData(
+          (lists) => ref
+              .read(listsOrderOverrideProvider.notifier)
+              .syncWithFirestore(lists),
+        );
+      },
+    );
+
+    final listsAsync = ref.watch(userListsWithReorderProvider);
 
     return listsAsync.when(
       data: (lists) {
@@ -23,70 +35,154 @@ class ListsTab extends ConsumerWidget {
           );
         }
 
-        return ListView.separated(
-          padding: const EdgeInsets.all(4),
-          itemBuilder: (context, index) {
-            final list = lists[index];
-            final listId = list['id'] as String;
-            final name = list['name'] as String? ?? 'Sin nombre';
-            IconData leadingIcon = Icons.list_alt_outlined;
-            if (listId == 'favorites') {
-              leadingIcon = Icons.favorite_border;
-            } else if (listId == 'my_collection') {
-              leadingIcon = Icons.inventory_2_outlined;
-            } else if (listId == 'wishlist') {
-              leadingIcon = Icons.bookmark_border;
-            } else if (listId.startsWith('played_year_')) {
-              leadingIcon = Icons.calendar_month;
-            }
-            return Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Color(0xFF137FEC), width: 2),
-              ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ListDetailScreen(
-                        listId: listId,
-                        fallbackName: name,
-                      ),
+        return ReorderableListView(
+          padding: const EdgeInsets.fromLTRB(4, 4, 4, 80), // 📏 Padding extra abajo para el FAB
+          // 🎨 Decorador personalizado para el elemento mientras se arrastra (más suave y elegante)
+          proxyDecorator: (child, index, animation) {
+            return AnimatedBuilder(
+              animation: animation,
+              builder: (context, child) {
+                // 🎯 Uso una curva más suave para transiciones más naturales
+                final animValue = Curves.easeOutCubic.transform(animation.value);
+                return Material(
+                  elevation: 6 + (animValue * 6), // ✨ Elevación más alta mientras se arrastra
+                  borderRadius: BorderRadius.circular(12),
+                  shadowColor: const Color(0xFF137FEC).withOpacity(0.4),
+                  color: Colors.transparent,
+                  child: Transform.scale(
+                    scale: 1.02 + (animValue * 0.03), // 📏 Escala más sutil
+                    child: Opacity(
+                      opacity: 0.95 + (animValue * 0.05), // 🌫️ Opacidad más sutil
+                      child: child,
                     ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ListHeader(
-                      name: name,
-                      leadingIcon: leadingIcon,
-                      listId: listId,
-                    ),
-                    // 🖼️ Galería mini de los juegos que tiene la lista (se oculta si está colapsado)
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final isCollapsed = ref.watch(listsCollapsedProvider);
-                        if (isCollapsed) {
-                          return const SizedBox.shrink();
-                        }
-                        return _ListGamesPreview(listId: listId);
-                      },
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
+              child: child,
             );
           },
-          separatorBuilder: (_, __) => const SizedBox(height: 4),
-          itemCount: lists.length,
+          onReorder: (oldIndex, newIndex) async {
+            // 📋 ReorderableListView ya ajusta el índice correctamente
+            // Si newIndex > oldIndex, significa que se mueve hacia abajo
+            // y el índice ya está ajustado por Flutter (el elemento ya fue removido)
+            // Si newIndex <= oldIndex, se mueve hacia arriba y el índice es correcto
+            
+            // ⚡ ACTUALIZACIÓN OPTIMISTA: Aplico el cambio inmediatamente en el estado local
+            // (el método reorderOptimistic ya maneja el ajuste correctamente)
+            ref.read(listsOrderOverrideProvider.notifier).reorderOptimistic(oldIndex, newIndex);
+            
+            // 📋 Obtengo el estado optimista actualizado para guardar en Firestore
+            // Esto asegura que usamos exactamente el mismo orden que se muestra visualmente
+            final optimisticState = ref.read(listsOrderOverrideProvider);
+            if (optimisticState == null) return; // No debería pasar, pero por seguridad
+            
+            // 💾 Extraigo los IDs en el nuevo orden del estado optimista
+            final listIds = optimisticState.map((list) => list['id'] as String).toList();
+            
+            // 🔥 Guardo el nuevo orden en Firestore en segundo plano
+            // (el estado local ya tiene el orden correcto, así que no hay rebote)
+            try {
+              final firestoreService = ref.read(firestoreServiceProvider);
+              await firestoreService.updateListsOrder(listIds);
+              // Cuando Firestore se actualice, el stream se sincronizará automáticamente
+            } catch (e) {
+              // ⚠️ Si falla, revierto el cambio optimista
+              ref.read(listsOrderOverrideProvider.notifier).clear();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error al actualizar el orden: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
+          children: [
+            for (int index = 0; index < lists.length; index++)
+              _ReorderableListCard(
+                key: ValueKey(lists[index]['id'] as String),
+                list: lists[index],
+              ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: Text('Error al cargar listas: $e'),
+      ),
+    );
+  }
+}
+
+/// 🎴 Widget de tarjeta reordenable para cada lista
+class _ReorderableListCard extends ConsumerWidget {
+  final Map<String, dynamic> list;
+
+  const _ReorderableListCard({
+    required super.key,
+    required this.list,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final listId = list['id'] as String;
+    final name = list['name'] as String? ?? 'Sin nombre';
+    IconData leadingIcon = Icons.list_alt_outlined;
+    if (listId == 'favorites') {
+      leadingIcon = Icons.favorite_border;
+    } else if (listId == 'my_collection') {
+      leadingIcon = Icons.inventory_2_outlined;
+    } else if (listId == 'wishlist') {
+      leadingIcon = Icons.bookmark_border;
+    } else if (listId.startsWith('played_year_')) {
+      leadingIcon = Icons.calendar_month;
+    }
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300), // ⏱️ Animación suave para cambios
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 4), // 📏 Espaciado entre tarjetas
+      child: Card(
+        key: key, // 🔑 Key necesaria para ReorderableListView
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF137FEC), width: 2),
+        ),
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ListDetailScreen(
+                  listId: listId,
+                  fallbackName: name,
+                ),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ListHeader(
+                name: name,
+                leadingIcon: leadingIcon,
+                listId: listId,
+              ),
+              // 🖼️ Galería mini de los juegos que tiene la lista (se oculta si está colapsado)
+              Consumer(
+                builder: (context, ref, _) {
+                  final isCollapsed = ref.watch(listsCollapsedProvider);
+                  if (isCollapsed) {
+                    return const SizedBox.shrink();
+                  }
+                  return _ListGamesPreview(listId: listId);
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -128,7 +224,18 @@ class _ListHeader extends ConsumerWidget {
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.drag_handle,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
           mouseCursor: SystemMouseCursors.basic,
         );
       },
@@ -139,7 +246,18 @@ class _ListHeader extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
         ),
         leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.drag_handle,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
         mouseCursor: SystemMouseCursors.basic,
       ),
       error: (_, __) => ListTile(
@@ -149,7 +267,18 @@ class _ListHeader extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
         ),
         leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.drag_handle,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
         mouseCursor: SystemMouseCursors.basic,
       ),
     );

@@ -133,4 +133,82 @@ final isGameInListProvider = FutureProvider.family<bool, GameListKey>((ref, key)
 /// 📦 Provider para controlar si las listas están colapsadas (sin mostrar imágenes)
 final listsCollapsedProvider = StateProvider<bool>((ref) => false);
 
+/// 🎯 Estado local para el orden de las listas (actualización optimista)
+final listsOrderOverrideProvider =
+    StateNotifierProvider<_ListsOrderNotifier, List<Map<String, dynamic>>?>(
+  (ref) => _ListsOrderNotifier(),
+);
+
+class _ListsOrderNotifier extends StateNotifier<List<Map<String, dynamic>>?> {
+  _ListsOrderNotifier() : super(null);
+
+  /// 📥 Sincroniza el estado con Firestore cuando no hay cambios pendientes.
+  void syncWithFirestore(List<Map<String, dynamic>> lists) {
+    if (state == null) {
+      state = lists;
+      return;
+    }
+
+    final localIds = state!.map((l) => l['id'] as String).toList();
+    final firestoreIds = lists.map((l) => l['id'] as String).toList();
+
+    if (localIds.length != firestoreIds.length) return;
+    for (int i = 0; i < localIds.length; i++) {
+      if (localIds[i] != firestoreIds[i]) {
+        return; // Todavía hay un orden local distinto; espero a que coincida.
+      }
+    }
+
+    state = lists;
+  }
+
+  /// 🔄 Aplica un reordenamiento optimista (inmediato).
+  /// 📍 Según la documentación oficial de Flutter:
+  /// Cuando oldIndex < newIndex, debemos ajustar newIndex -= 1 antes de insertar
+  void reorderOptimistic(int oldIndex, int newIndex) {
+    final current = state;
+    if (current == null) return;
+
+    final originalLength = current.length;
+    final reordered = List<Map<String, dynamic>>.from(current);
+    final moved = reordered.removeAt(oldIndex);
+    
+    // 🔄 Ajuste según documentación oficial de Flutter
+    // Si movemos hacia abajo (oldIndex < newIndex), ajustamos newIndex
+    int insertIndex = newIndex;
+    if (oldIndex < newIndex) {
+      // Si newIndex es el último índice válido (originalLength - 1) o mayor,
+      // significa que queremos insertar al final después de remover
+      if (newIndex >= originalLength - 1) {
+        insertIndex = reordered.length; // Insertar al final
+      } else {
+        insertIndex = newIndex - 1; // Ajuste normal
+      }
+    }
+    
+    reordered.insert(insertIndex, moved);
+    
+    state = reordered;
+  }
+
+  /// 🔄 Limpia el override (vuelve a usar solo Firestore).
+  void clear() {
+    state = null;
+  }
+}
+
+/// 🎯 Provider final que combina el stream con el estado local optimista
+final userListsWithReorderProvider =
+    Provider<AsyncValue<List<Map<String, dynamic>>>>((ref) {
+  final baseAsync = ref.watch(userListsStreamProvider);
+  final override = ref.watch(listsOrderOverrideProvider);
+
+  return baseAsync.when(
+    data: (lists) =>
+        AsyncValue.data(override ?? lists),
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});
+
 
