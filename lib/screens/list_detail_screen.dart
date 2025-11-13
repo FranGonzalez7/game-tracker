@@ -8,7 +8,7 @@ import '../widgets/game_detail_modal.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/game_search_card.dart';
 
-enum _ListMenuAction { clear }
+enum _ListMenuAction { clear, delete }
 
 /// 🗂️ Pantalla genérica para mostrar el contenido de cualquier lista
 /// 📋 Reutiliza la misma experiencia que teníamos en la wishlist
@@ -255,10 +255,14 @@ class ListDetailScreen extends ConsumerWidget {
           PopupMenuButton<_ListMenuAction>(
             icon: const Icon(Icons.more_vert),
             tooltip: 'Opciones de lista',
-            itemBuilder: (context) => const [
-              PopupMenuItem<_ListMenuAction>(
+            itemBuilder: (context) => [
+              const PopupMenuItem<_ListMenuAction>(
                 value: _ListMenuAction.clear,
                 child: Text('Vaciar lista'),
+              ),
+              const PopupMenuItem<_ListMenuAction>(
+                value: _ListMenuAction.delete,
+                child: Text('Borrar lista'),
               ),
             ],
             onSelected: (action) async {
@@ -298,6 +302,60 @@ class ListDetailScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Error al vaciar lista: $e'),
+                          duration: const Duration(seconds: 3),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              } else if (action == _ListMenuAction.delete) {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Borrar lista'),
+                    content: Text('¿Seguro que quieres borrar la lista "$listName"?\n\nEsta acción no se puede deshacer y se eliminarán todos los juegos de la lista.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancelar'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Borrar'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm == true) {
+                  try {
+                    final firestoreService = ref.read(firestoreServiceProvider);
+                    // 🗑️ Remuevo la lista del estado local optimista ANTES de borrarla
+                    // Esto mantiene el orden de las demás listas sin causar rebotes
+                    ref.read(listsOrderOverrideProvider.notifier).removeList(listId);
+                    await firestoreService.deleteList(listId);
+                    if (context.mounted) {
+                      // 🚪 Volvemos a la pantalla anterior después de borrar
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Lista "$listName" borrada'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      // ⚠️ Si falla, no necesitamos revertir porque el estado local
+                      // ya se actualizará automáticamente cuando Firestore se sincronice
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al borrar lista: $e'),
                           duration: const Duration(seconds: 3),
                           backgroundColor: Colors.red,
                         ),

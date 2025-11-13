@@ -141,6 +141,11 @@ final listsOrderOverrideProvider =
 
 class _ListsOrderNotifier extends StateNotifier<List<Map<String, dynamic>>?> {
   _ListsOrderNotifier() : super(null);
+  
+  // 🕐 Timestamp de la última actualización optimista para evitar rebotes
+  DateTime? _lastOptimisticUpdate;
+  // 📋 Orden esperado después de un reordenamiento optimista
+  List<String>? _expectedOrder;
 
   /// 📥 Sincroniza el estado con Firestore cuando no hay cambios pendientes.
   void syncWithFirestore(List<Map<String, dynamic>> lists) {
@@ -151,15 +156,127 @@ class _ListsOrderNotifier extends StateNotifier<List<Map<String, dynamic>>?> {
 
     final localIds = state!.map((l) => l['id'] as String).toList();
     final firestoreIds = lists.map((l) => l['id'] as String).toList();
-
-    if (localIds.length != firestoreIds.length) return;
-    for (int i = 0; i < localIds.length; i++) {
-      if (localIds[i] != firestoreIds[i]) {
-        return; // Todavía hay un orden local distinto; espero a que coincida.
+    
+    // ⏱️ Si hubo una actualización optimista reciente (últimos 3 segundos),
+    // y el orden de Firestore NO coincide con el esperado, lo ignoro para evitar rebotes
+    if (_lastOptimisticUpdate != null && _expectedOrder != null) {
+      final timeSinceUpdate = DateTime.now().difference(_lastOptimisticUpdate!);
+      if (timeSinceUpdate.inSeconds < 3) {
+        // Si el orden de Firestore NO es el esperado (todavía tiene el orden antiguo),
+        // lo ignoro completamente durante la ventana de protección
+        if (firestoreIds.length == _expectedOrder!.length) {
+          bool matchesExpected = true;
+          for (int i = 0; i < firestoreIds.length; i++) {
+            if (firestoreIds[i] != _expectedOrder![i]) {
+              matchesExpected = false;
+              break;
+            }
+          }
+          // Si NO coincide con el esperado, es el orden antiguo - lo ignoro
+          if (!matchesExpected) {
+            return; // Ignoro esta actualización de Firestore (orden antiguo)
+          }
+        }
+        
+        // Si el orden de Firestore coincide con el esperado, verifico si coincide con el local
+        if (localIds.length == firestoreIds.length) {
+          bool orderMatches = true;
+          for (int i = 0; i < localIds.length; i++) {
+            if (localIds[i] != firestoreIds[i]) {
+              orderMatches = false;
+              break;
+            }
+          }
+          if (orderMatches) {
+            // El orden coincide, mantengo el estado local y limpio la protección
+            _lastOptimisticUpdate = null;
+            _expectedOrder = null;
+            return;
+          }
+        }
+      } else {
+        // Pasaron más de 3 segundos, limpio la protección
+        _lastOptimisticUpdate = null;
+        _expectedOrder = null;
       }
     }
 
-    state = lists;
+    // 🔄 Si Firestore tiene menos elementos, puede ser que se borró una lista
+    // Verifico si todas las listas locales están en Firestore (solo se borró una)
+    final localSet = localIds.toSet();
+    final firestoreSet = firestoreIds.toSet();
+    
+    if (firestoreIds.length < localIds.length) {
+      // Si todas las listas de Firestore están en el estado local,
+      // significa que solo se borró una lista, así que actualizo manteniendo el orden local
+      if (firestoreSet.every((id) => localSet.contains(id))) {
+        // Filtro el estado local para mantener solo las listas que están en Firestore
+        final filtered = state!.where((list) {
+          final id = list['id'] as String;
+          return firestoreSet.contains(id);
+        }).toList();
+        
+        // Verifico si el orden de las listas restantes coincide
+        final filteredIds = filtered.map((l) => l['id'] as String).toList();
+        bool orderMatches = filteredIds.length == firestoreIds.length;
+        if (orderMatches) {
+          for (int i = 0; i < filteredIds.length; i++) {
+            if (filteredIds[i] != firestoreIds[i]) {
+              orderMatches = false;
+              break;
+            }
+          }
+        }
+        
+        // Si el orden coincide, uso el estado local filtrado (mantiene el orden optimista)
+        // Si no coincide, uso los datos de Firestore
+        state = orderMatches ? filtered : lists;
+        return;
+      } else {
+        // Si hay listas en Firestore que no están en el estado local, uso Firestore
+        state = lists;
+        return;
+      }
+    }
+
+    // 🔄 Si tienen la misma cantidad, verifico si el orden coincide
+    if (localIds.length == firestoreIds.length) {
+      bool orderMatches = true;
+      for (int i = 0; i < localIds.length; i++) {
+        if (localIds[i] != firestoreIds[i]) {
+          orderMatches = false;
+          break;
+        }
+      }
+      // Si el orden coincide EXACTAMENTE, mantengo el estado local
+      // para evitar rebotes innecesarios. Solo actualizo si hay diferencias.
+      if (orderMatches) {
+        // No actualizo el estado si el orden ya coincide - esto previene rebotes
+        return;
+      }
+    }
+    
+    // 🔄 Si Firestore tiene más elementos, puede ser que se añadió una lista nueva
+    // En ese caso, verifico si todas las listas locales están en Firestore
+    if (firestoreIds.length > localIds.length) {
+      if (localSet.every((id) => firestoreSet.contains(id))) {
+        // Todas las listas locales están en Firestore, mantengo el orden local
+        // y añado las nuevas listas al final
+        final newLists = lists.where((list) {
+          final id = list['id'] as String;
+          return !localSet.contains(id);
+        }).toList();
+        
+        // Añado las nuevas listas al final del estado local, manteniendo el orden
+        final updated = List<Map<String, dynamic>>.from(state!);
+        updated.addAll(newLists);
+        state = updated;
+        return;
+      } else {
+        // Hay listas nuevas o cambios complejos, uso Firestore
+        state = lists;
+      }
+    }
   }
 
   /// 🔄 Aplica un reordenamiento optimista (inmediato).
@@ -169,29 +286,44 @@ class _ListsOrderNotifier extends StateNotifier<List<Map<String, dynamic>>?> {
     final current = state;
     if (current == null) return;
 
-    final originalLength = current.length;
     final reordered = List<Map<String, dynamic>>.from(current);
     final moved = reordered.removeAt(oldIndex);
     
-    // 🔄 Ajuste según documentación oficial de Flutter
-    // Si movemos hacia abajo (oldIndex < newIndex), ajustamos newIndex
+    // 🔄 Calcular el índice de inserción DESPUÉS de remover
+    // Según la documentación oficial, cuando oldIndex < newIndex, newIndex se refiere
+    // a la posición en la lista ORIGINAL. Después de remover, debemos ajustar.
     int insertIndex = newIndex;
     if (oldIndex < newIndex) {
-      // Si newIndex es el último índice válido (originalLength - 1) o mayor,
-      // significa que queremos insertar al final después de remover
-      if (newIndex >= originalLength - 1) {
-        insertIndex = reordered.length; // Insertar al final
-      } else {
-        insertIndex = newIndex - 1; // Ajuste normal
-      }
+      insertIndex = newIndex - 1;
+    }
+    
+    // Asegurarnos de que el índice esté dentro del rango válido después de remover
+    // Si insertIndex es igual a reordered.length, significa que queremos insertar al final
+    // Pero si es mayor, lo ajustamos al último índice válido
+    if (insertIndex > reordered.length) {
+      insertIndex = reordered.length;
+    } else if (insertIndex < 0) {
+      insertIndex = 0;
     }
     
     reordered.insert(insertIndex, moved);
     
     state = reordered;
+    // ⏱️ Marco el timestamp y el orden esperado de la actualización optimista
+    _lastOptimisticUpdate = DateTime.now();
+    _expectedOrder = reordered.map((l) => l['id'] as String).toList();
+  }
+
+  /// 🗑️ Remueve una lista específica del estado local optimista
+  void removeList(String listId) {
+    if (state == null) return;
+    
+    final updated = state!.where((list) => list['id'] as String != listId).toList();
+    state = updated.isEmpty ? null : updated;
   }
 
   /// 🔄 Limpia el override (vuelve a usar solo Firestore).
+  /// ⚠️ Solo usar cuando realmente necesitemos resetear todo el estado
   void clear() {
     state = null;
   }
@@ -204,8 +336,40 @@ final userListsWithReorderProvider =
   final override = ref.watch(listsOrderOverrideProvider);
 
   return baseAsync.when(
-    data: (lists) =>
-        AsyncValue.data(override ?? lists),
+    data: (lists) {
+      // 🔄 Si hay un estado local optimista, verifico si el orden coincide
+      if (override != null) {
+        final localIds = override.map((l) => l['id'] as String).toList();
+        final firestoreIds = lists.map((l) => l['id'] as String).toList();
+        
+        // Si tienen el mismo orden y la misma cantidad, mantengo el estado local
+        // Esto previene rebotes porque no hay cambio de estado
+        if (localIds.length == firestoreIds.length) {
+          bool orderMatches = true;
+          for (int i = 0; i < localIds.length; i++) {
+            if (localIds[i] != firestoreIds[i]) {
+              orderMatches = false;
+              break;
+            }
+          }
+          if (orderMatches) {
+            // El orden coincide exactamente, mantengo el estado local
+            // NO sincronizo para evitar cualquier rebote
+            return AsyncValue.data(override);
+          }
+        }
+        
+        // Si hay diferencias, sincronizo de forma inteligente
+        // (pero con protección temporal para evitar rebotes)
+        ref.read(listsOrderOverrideProvider.notifier).syncWithFirestore(lists);
+        final updatedOverride = ref.read(listsOrderOverrideProvider);
+        return AsyncValue.data(updatedOverride ?? lists);
+      }
+      
+      // No hay estado local, inicializo con Firestore
+      ref.read(listsOrderOverrideProvider.notifier).syncWithFirestore(lists);
+      return AsyncValue.data(lists);
+    },
     loading: () => const AsyncValue.loading(),
     error: (error, stack) => AsyncValue.error(error, stack),
   );

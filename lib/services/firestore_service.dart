@@ -322,6 +322,38 @@ class FirestoreService {
     await listRef.update({'updatedAt': FieldValue.serverTimestamp()});
   }
 
+  /// 🗑️ Elimina completamente una lista (documento y todos sus juegos)
+  /// ⚠️ No permite borrar listas por defecto (favorites, wishlist, my_collection, played_year_*)
+  Future<void> deleteList(String listId) async {
+    if (!isAuthenticated) {
+      throw Exception('Usuario no autenticado');
+    }
+
+    // 🚫 No permitir borrar listas por defecto
+    if (listId == _favoritesListId ||
+        listId == _wishlistListId ||
+        listId == _myCollectionListId ||
+        listId.startsWith('played_year_')) {
+      throw Exception('No se pueden borrar listas por defecto');
+    }
+
+    // 🗑️ Primero elimino todos los juegos de la lista
+    final gamesRef = _getListGamesCollection(listId);
+    final gamesSnapshot = await gamesRef.get();
+    
+    if (gamesSnapshot.docs.isNotEmpty) {
+      final batch = _firestore.batch();
+      for (final doc in gamesSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
+
+    // 🗑️ Luego elimino el documento de la lista
+    final listRef = _getListDocument(listId);
+    await listRef.delete();
+  }
+
   /// 📡 Obtiene los juegos de una lista (stream)
   Stream<List<Game>> getListGamesStream(String listId) {
     if (!isAuthenticated) {
