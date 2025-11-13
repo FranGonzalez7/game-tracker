@@ -65,8 +65,16 @@ class ListsTab extends ConsumerWidget {
                       leadingIcon: leadingIcon,
                       listId: listId,
                     ),
-                    // 🖼️ Galería mini de los juegos que tiene la lista
-                    _ListGamesPreview(listId: listId),
+                    // 🖼️ Galería mini de los juegos que tiene la lista (se oculta si está colapsado)
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final isCollapsed = ref.watch(listsCollapsedProvider);
+                        if (isCollapsed) {
+                          return const SizedBox.shrink();
+                        }
+                        return _ListGamesPreview(listId: listId);
+                      },
+                    ),
                   ],
                 ),
               ),

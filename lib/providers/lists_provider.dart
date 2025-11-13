@@ -130,4 +130,7 @@ final isGameInListProvider = FutureProvider.family<bool, GameListKey>((ref, key)
   return firestoreService.isGameInList(key.listId, key.gameId);
 });
 
+/// 📦 Provider para controlar si las listas están colapsadas (sin mostrar imágenes)
+final listsCollapsedProvider = StateProvider<bool>((ref) => false);
+
 

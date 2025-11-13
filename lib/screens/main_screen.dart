@@ -10,6 +10,7 @@ import 'user_tab.dart';
 import '../widgets/profile_modal.dart';
 import '../providers/auth_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../providers/lists_provider.dart';
 
 /// 🧭 Pantalla principal con pestañas para Buscar y Mis Juegos
 /// 🧱 Está hecha con Material 3 y trato de mantenerla limpia (sigo practicando diseño)
@@ -58,6 +59,36 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ),
         centerTitle: true,
         actions: [
+          // 🎛️ Menú desplegable de opciones para la pestaña de Listas
+          if (_currentIndex == 0)
+            Consumer(
+              builder: (context, ref, _) {
+                final isCollapsed = ref.watch(listsCollapsedProvider);
+                return PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (value) {
+                    if (value == 'collapse') {
+                      ref.read(listsCollapsedProvider.notifier).state = !isCollapsed;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem<String>(
+                      value: 'collapse',
+                      child: Row(
+                        children: [
+                          Icon(
+                            isCollapsed ? Icons.expand : Icons.compress,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(isCollapsed ? 'Expandir Listas' : 'Colapsar Listas'),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           authState.when(
             data: (user) {
               if (user == null) return const SizedBox.shrink();
