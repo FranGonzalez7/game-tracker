@@ -224,17 +224,10 @@ class _ListHeader extends ConsumerWidget {
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.drag_handle,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right),
-            ],
+          trailing: Icon(
+            Icons.drag_handle,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+            size: 20,
           ),
           mouseCursor: SystemMouseCursors.basic,
         );
@@ -246,17 +239,10 @@ class _ListHeader extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
         ),
         leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.drag_handle,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right),
-          ],
+        trailing: Icon(
+          Icons.drag_handle,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          size: 20,
         ),
         mouseCursor: SystemMouseCursors.basic,
       ),
@@ -267,17 +253,10 @@ class _ListHeader extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
         ),
         leading: Icon(leadingIcon, color: const Color(0xFF137FEC)),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.drag_handle,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right),
-          ],
+        trailing: Icon(
+          Icons.drag_handle,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          size: 20,
         ),
         mouseCursor: SystemMouseCursors.basic,
       ),

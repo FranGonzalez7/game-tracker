@@ -203,6 +203,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               label: const Text('Nueva Lista'),
               backgroundColor: const Color(0xFF137FEC),
               foregroundColor: Colors.white,
+              extendedPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             )
           : null,
       bottomNavigationBar: Container(
