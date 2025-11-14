@@ -201,46 +201,45 @@ class _GameDetailContent extends ConsumerWidget {
                           ),
                     ),
                     const SizedBox(height: 16),
-                    if (game.rating != null) ...[
+                    if (game.rating != null || game.released != null) ...[
                       Row(
                         children: [
-                          Icon(
-                            Icons.star,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            game.rating!.toStringAsFixed(1),
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ) ?? const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    if (game.released != null) ...[
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            game.released!,
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                                ) ?? TextStyle(
-                                  fontSize: 16,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                                ),
-                          ),
+                          if (game.rating != null) ...[
+                            Icon(
+                              Icons.star,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              game.rating!.toStringAsFixed(1),
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ) ?? const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ],
+                          if (game.rating != null && game.released != null)
+                            const SizedBox(width: 32),
+                          if (game.released != null) ...[
+                            Icon(
+                              Icons.calendar_today,
+                              size: 20,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              game.released!,
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  ) ?? TextStyle(
+                                    fontSize: 16,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  ),
+                            ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -355,7 +354,7 @@ class _GameDetailActions extends ConsumerWidget {
             width: double.infinity,
             child: _PlayingNowToggle(game: game),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -383,7 +382,7 @@ class _GameDetailActions extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
