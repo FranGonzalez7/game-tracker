@@ -98,6 +98,22 @@ class FirestoreService {
         );
   }
 
+  /// 📂 Referencia a la colección de estados especiales por juego
+  CollectionReference<Map<String, dynamic>> _getGameStatusesCollection() {
+    final userId = currentUserId;
+    if (userId == null) {
+      throw Exception('Usuario no autenticado');
+    }
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('gameStatuses')
+        .withConverter<Map<String, dynamic>>(
+          fromFirestore: (snapshot, _) => snapshot.data() ?? <String, dynamic>{},
+          toFirestore: (data, _) => data,
+        );
+  }
+
   /// 🆕 Crea una nueva lista con nombre
   Future<DocumentReference> createList(String name) async {
     if (!isAuthenticated) {
@@ -119,6 +135,71 @@ class FirestoreService {
       'createdAt': now,
       'updatedAt': now,
       'order': maxOrder + 1, // 📍 La nueva lista va al final
+    });
+  }
+
+  /// 🎮 Marca o desmarca un juego como "Jugando ahora"
+  Future<void> setPlayingNowStatus(Game game, bool isPlayingNow) async {
+    if (!isAuthenticated) {
+      throw Exception('Usuario no autenticado');
+    }
+
+    final statusesRef = _getGameStatusesCollection();
+    final docRef = statusesRef.doc(game.id.toString());
+
+    if (isPlayingNow) {
+      await docRef.set({
+        'gameId': game.id,
+        'name': game.name,
+        'backgroundImage': game.backgroundImage,
+        'playingNow': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      return;
+    }
+
+    final snapshot = await docRef.get();
+    if (!snapshot.exists) {
+      return;
+    }
+
+    final data = snapshot.data() ?? {};
+    final hasCompletedFlag = data['completed'] as bool? ?? false;
+
+    if (hasCompletedFlag) {
+      await docRef.set({
+        'playingNow': false,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } else {
+      await docRef.delete();
+    }
+  }
+
+  /// ❓ Verifica si un juego está marcado como "Jugando ahora"
+  Future<bool> isPlayingNow(int gameId) async {
+    if (!isAuthenticated) {
+      return false;
+    }
+
+    final doc = await _getGameStatusesCollection().doc(gameId.toString()).get();
+    if (!doc.exists) return false;
+    final data = doc.data();
+    return (data?['playingNow'] as bool?) ?? false;
+  }
+
+  /// 🌊 Stream para escuchar cambios del estado "Jugando ahora" de un juego
+  Stream<bool> playingNowStatusStream(int gameId) {
+    if (!isAuthenticated) {
+      return Stream.value(false);
+    }
+
+    return _getGameStatusesCollection()
+        .doc(gameId.toString())
+        .snapshots()
+        .map((snapshot) {
+      final data = snapshot.data();
+      return (data?['playingNow'] as bool?) ?? false;
     });
   }
 

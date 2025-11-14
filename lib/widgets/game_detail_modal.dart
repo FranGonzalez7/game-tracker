@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/game.dart';
 import '../providers/wishlist_provider.dart';
+import '../providers/game_status_provider.dart';
 import 'add_to_list_modal.dart';
 
 /// 🪄 Modal que muestra la info detallada de un juego (todavía lo voy puliendo)
@@ -332,13 +333,13 @@ class _GameDetailContent extends ConsumerWidget {
   }
 }
 
-class _GameDetailActions extends StatelessWidget {
+class _GameDetailActions extends ConsumerWidget {
   final Game game;
 
   const _GameDetailActions({required this.game});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom + 10;
 
     return Container(
@@ -350,6 +351,11 @@ class _GameDetailActions extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          SizedBox(
+            width: double.infinity,
+            child: _PlayingNowToggle(game: game),
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -396,6 +402,110 @@ class _GameDetailActions extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlayingNowToggle extends ConsumerStatefulWidget {
+  final Game game;
+
+  const _PlayingNowToggle({required this.game});
+
+  @override
+  ConsumerState<_PlayingNowToggle> createState() => _PlayingNowToggleState();
+}
+
+class _PlayingNowToggleState extends ConsumerState<_PlayingNowToggle> {
+  bool _isProcessing = false;
+  bool? _lastKnownStatus;
+
+  @override
+  void didUpdateWidget(covariant _PlayingNowToggle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.game.id != widget.game.id) {
+      _lastKnownStatus = null;
+    }
+  }
+
+  Future<void> _toggle(bool currentValue) async {
+    if (_isProcessing) return;
+
+    setState(() => _isProcessing = true);
+    try {
+      final controller = ref.read(playingNowControllerProvider);
+      await controller.toggle(widget.game, !currentValue);
+    } catch (e) {
+      debugPrint('Error al actualizar Jugando ahora: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statusAsync = ref.watch(playingNowStatusProvider(widget.game.id));
+    statusAsync.whenData((value) {
+      if (_lastKnownStatus != value) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _lastKnownStatus = value;
+            });
+          }
+        });
+      }
+    });
+
+    final isPlaying = statusAsync.asData?.value ?? _lastKnownStatus ?? false;
+    final highlightColor = isPlaying ? const Color(0xFFFFC107) : const Color(0xFF137FEC);
+    final backgroundColor =
+        isPlaying ? const Color(0xFFFFC107).withOpacity(0.12) : Theme.of(context).colorScheme.surface;
+    final isDisabled = _isProcessing;
+
+    return OutlinedButton(
+      onPressed: isDisabled ? null : () => _toggle(isPlaying),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        side: BorderSide(color: highlightColor, width: 2),
+        foregroundColor: highlightColor,
+        backgroundColor: backgroundColor,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          _isProcessing
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(
+                  isPlaying ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                  color: highlightColor,
+                ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              'Jugando ahora',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: highlightColor,
+                  ) ??
+                  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: highlightColor,
+                  ),
             ),
           ),
         ],

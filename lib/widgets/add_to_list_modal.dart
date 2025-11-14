@@ -1,9 +1,9 @@
-import '../providers/wishlist_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game.dart';
 import '../providers/lists_provider.dart';
+import '../providers/wishlist_provider.dart';
 
 /// 🧺 Modal para elegir una lista y añadir un juego (todavía lo mantengo simple)
 class AddToListModal extends ConsumerWidget {
