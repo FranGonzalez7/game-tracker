@@ -361,13 +361,17 @@ final userListsWithReorderProvider =
         
         // Si hay diferencias, sincronizo de forma inteligente
         // (pero con protección temporal para evitar rebotes)
-        ref.read(listsOrderOverrideProvider.notifier).syncWithFirestore(lists);
+        Future.microtask(() {
+          ref.read(listsOrderOverrideProvider.notifier).syncWithFirestore(lists);
+        });
         final updatedOverride = ref.read(listsOrderOverrideProvider);
         return AsyncValue.data(updatedOverride ?? lists);
       }
       
       // No hay estado local, inicializo con Firestore
-      ref.read(listsOrderOverrideProvider.notifier).syncWithFirestore(lists);
+      Future.microtask(() {
+        ref.read(listsOrderOverrideProvider.notifier).syncWithFirestore(lists);
+      });
       return AsyncValue.data(lists);
     },
     loading: () => const AsyncValue.loading(),

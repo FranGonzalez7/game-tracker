@@ -108,18 +108,17 @@ class _GameDetailContent extends ConsumerWidget {
             width: double.infinity,
             height: 250,
             child: game.backgroundImage != null
-                ? CachedNetworkImage(
-                    imageUrl: game.backgroundImage!,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: const Center(
+                ? Container(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: CachedNetworkImage(
+                      imageUrl: game.backgroundImage!,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
+                      filterQuality: FilterQuality.high,
+                      placeholder: (context, url) => const Center(
                         child: CircularProgressIndicator(),
                       ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Icon(
+                      errorWidget: (context, url, error) => Icon(
                         Icons.videogame_asset,
                         size: 64,
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
@@ -127,10 +126,7 @@ class _GameDetailContent extends ConsumerWidget {
                     ),
                   )
                 : Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                    ),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.videogame_asset,
                       size: 64,
