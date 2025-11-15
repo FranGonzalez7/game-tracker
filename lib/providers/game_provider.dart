@@ -243,3 +243,9 @@ final gameSearchProvider = Provider<AsyncValue<List<Game>>>((ref) {
   );
 });
 
+/// 🆕 Provider que obtiene los últimos lanzamientos (últimos 6 meses) para mostrar como sugerencias
+final latestReleasesProvider = FutureProvider<List<Game>>((ref) async {
+  final gameService = ref.watch(gameServiceProvider);
+  return await gameService.getLatestReleases();
+});
+

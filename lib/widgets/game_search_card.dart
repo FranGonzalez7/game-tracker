@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/game.dart';
-import '../providers/wishlist_provider.dart';
 
 /// 🧩 Tarjeta minimalista para mostrar resultados de búsqueda en una cuadrícula
 /// 🖼️ Solo enseño la imagen del juego y su nombre (simple pero útil)
-class GameSearchCard extends ConsumerWidget {
+class GameSearchCard extends StatelessWidget {
   final Game game;
   final VoidCallback onTap;
 
@@ -17,8 +15,7 @@ class GameSearchCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isInWishlistAsync = ref.watch(wishlistCheckerProvider(game.id));
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -76,80 +73,6 @@ class GameSearchCard extends ConsumerWidget {
                               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                             ),
                           ),
-                    Positioned(
-                    top: 6,
-                    right: 6,
-                    child: isInWishlistAsync.when(
-                      data: (isInWishlist) {
-                        return GestureDetector(
-                          onTap: () async {
-                              final wishlistNotifier = ref.read(wishlistNotifierProvider.notifier);
-                              try {
-                                if (isInWishlist) {
-                                  await wishlistNotifier.removeFromWishlist(game.id);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('${game.name} eliminado de la wishlist'),
-                                        duration: const Duration(seconds: 2),
-                                        backgroundColor: Colors.orange,
-                                      ),
-                                    );
-                                  }
-                                } else {
-                                  await wishlistNotifier.addToWishlist(game);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('${game.name} añadido a la wishlist'),
-                                        duration: const Duration(seconds: 2),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  }
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error al actualizar wishlist: $e'),
-                                      duration: const Duration(seconds: 3),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              }
-                          },
-                          behavior: HitTestBehavior.opaque,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: isInWishlist
-                                ? BoxDecoration(
-                                    color: const Color(0xFF4CAF50),
-                                    borderRadius: BorderRadius.circular(12),
-                                  )
-                                : BoxDecoration(
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        const Color(0xFF137FEC).withOpacity(0.85),
-                                        const Color(0x00000000),
-                                      ],
-                                      radius: 0.8,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                            child: const Icon(
-                              Icons.card_giftcard_outlined,
-                              size: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      },
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                    ),
-                  ),
                   ],
                 ),
               ),

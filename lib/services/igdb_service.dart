@@ -43,6 +43,33 @@ class IgdbService {
         .toList();
   }
 
+  /// 🆕 Obtiene los últimos lanzamientos (últimos 6 meses) utilizando el endpoint proxy `/api/latest-releases`
+  Future<List<Game>> getLatestReleases() async {
+    final uri = ApiConfig.buildUri('/api/latest-releases', {});
+    final response = await _client.get(
+      uri,
+      headers: const {
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'IGDB proxy error ${response.statusCode}: ${response.body}',
+      );
+    }
+
+    final decoded = json.decode(response.body);
+    if (decoded is! List) {
+      throw Exception('Unexpected response format from IGDB proxy');
+    }
+
+    return decoded
+        .whereType<Map<String, dynamic>>()
+        .map(Game.fromJson)
+        .toList();
+  }
+
   /// 👋 Cierra el cliente HTTP en caso de que quieras liberar recursos manualmente
   void dispose() {
     _client.close();
