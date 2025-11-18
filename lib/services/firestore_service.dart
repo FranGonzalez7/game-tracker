@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/game.dart';
 
 /// 🔥 Servicio para hablar con Firestore
@@ -236,12 +235,6 @@ class FirestoreService {
       listId: playedYearId,
       name: 'Jugados en $currentYear',
     );
-
-    try {
-      await _migrateLegacyWishlistIfNeeded();
-    } catch (error) {
-      debugPrint('Error al migrar wishlist legacy: $error');
-    }
   }
 
   /// 🌊 Stream de listas del usuario
@@ -535,43 +528,6 @@ class FirestoreService {
     }
 
     await docRef.set(payload, SetOptions(merge: true));
-  }
-
-  Future<void> _migrateLegacyWishlistIfNeeded() async {
-    final userId = currentUserId;
-    if (userId == null) {
-      return;
-    }
-
-    final newWishlistGamesRef = _getListGamesCollection(_wishlistListId);
-    final hasNewData = await newWishlistGamesRef.limit(1).get();
-    if (hasNewData.docs.isNotEmpty) {
-      return;
-    }
-
-    final legacyWishlistRef = _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('wishlist')
-        .withConverter<Map<String, dynamic>>(
-          fromFirestore: (snapshot, _) => snapshot.data() ?? <String, dynamic>{},
-          toFirestore: (data, _) => data,
-        );
-    final legacySnapshot = await legacyWishlistRef.get();
-
-    if (legacySnapshot.docs.isEmpty) {
-      return;
-    }
-
-    final batch = _firestore.batch();
-
-    for (final doc in legacySnapshot.docs) {
-      final data = doc.data();
-      batch.set(newWishlistGamesRef.doc(doc.id), data);
-      batch.delete(doc.reference);
-    }
-
-    await batch.commit();
   }
 }
 
