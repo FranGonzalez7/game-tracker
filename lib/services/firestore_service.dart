@@ -202,6 +202,69 @@ class FirestoreService {
     });
   }
 
+  /// 🌊 Stream que obtiene todos los juegos marcados como "Jugando ahora"
+  /// 📊 Ordenados por createdAt/updatedAt ascendente (los primeros añadidos primero)
+  Stream<List<Game>> getPlayingNowGamesStream() {
+    if (!isAuthenticated) {
+      return Stream.value([]);
+    }
+
+    return _getGameStatusesCollection()
+        .where('playingNow', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+      final gamesWithTimestamp = <_GameWithTimestamp>[];
+      
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final gameId = data['gameId'] as int?;
+        final name = data['name'] as String?;
+        final backgroundImage = data['backgroundImage'] as String?;
+        
+        // Intentar obtener createdAt o updatedAt para ordenar
+        DateTime? timestamp;
+        if (data['createdAt'] != null) {
+          final createdAt = data['createdAt'];
+          if (createdAt is Timestamp) {
+            timestamp = createdAt.toDate();
+          } else if (createdAt is DateTime) {
+            timestamp = createdAt;
+          }
+        } else if (data['updatedAt'] != null) {
+          final updatedAt = data['updatedAt'];
+          if (updatedAt is Timestamp) {
+            timestamp = updatedAt.toDate();
+          } else if (updatedAt is DateTime) {
+            timestamp = updatedAt;
+          }
+        }
+
+        if (gameId != null && name != null) {
+          gamesWithTimestamp.add(_GameWithTimestamp(
+            game: Game(
+              id: gameId,
+              name: name,
+              backgroundImage: backgroundImage,
+            ),
+            timestamp: timestamp,
+          ));
+        }
+      }
+      
+      // Ordenar por timestamp (ascendente: primeros añadidos primero)
+      gamesWithTimestamp.sort((a, b) {
+        final aTime = a.timestamp;
+        final bTime = b.timestamp;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        return aTime.compareTo(bTime);
+      });
+      
+      return gamesWithTimestamp.map((e) => e.game).toList();
+    });
+  }
+
   /// 🛠️ Asegura que existan las listas predeterminadas del usuario
   Future<void> ensureDefaultLists() async {
     if (!isAuthenticated) {
@@ -529,6 +592,17 @@ class FirestoreService {
 
     await docRef.set(payload, SetOptions(merge: true));
   }
+}
+
+/// 🎮 Clase auxiliar para ordenar juegos por timestamp
+class _GameWithTimestamp {
+  final Game game;
+  final DateTime? timestamp;
+
+  _GameWithTimestamp({
+    required this.game,
+    this.timestamp,
+  });
 }
 
 

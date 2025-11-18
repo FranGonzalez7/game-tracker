@@ -9,6 +9,12 @@ final playingNowStatusProvider = StreamProvider.family<bool, int>((ref, gameId) 
   return firestoreService.playingNowStatusStream(gameId);
 });
 
+/// 🌊 Provider que obtiene todos los juegos marcados como "Jugando ahora"
+final playingNowGamesProvider = StreamProvider<List<Game>>((ref) {
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  return firestoreService.getPlayingNowGamesStream();
+});
+
 /// 🕹️ Helper para alternar el estado "Jugando ahora"
 final playingNowControllerProvider = Provider<PlayingNowController>((ref) {
   return PlayingNowController(ref);
