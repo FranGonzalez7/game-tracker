@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'list_detail_screen.dart';
 import '../models/game.dart';
 import '../providers/game_status_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/profile_provider.dart';
 import '../widgets/game_detail_modal.dart';
 
 class HomeTab extends ConsumerWidget {
@@ -12,6 +14,9 @@ class HomeTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final userProfile = ref.watch(userProfileStreamProvider);
+
     return Column(
       children: [
         // 🧺 Contenedor superior justo bajo la AppBar (todavía está vacío pero me sirve de guía)
@@ -25,6 +30,91 @@ class HomeTab extends ConsumerWidget {
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(16),
+              ),
+              constraints: const BoxConstraints.expand(),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: authState.when(
+                  data: (user) {
+                    return userProfile.when(
+                      data: (profile) {
+                        final firstName = (profile?['firstName'] as String?)?.trim();
+                        final displayName = user?.displayName?.trim();
+                        final alias = (profile?['alias'] as String?)?.trim();
+                        final emailFallback = user?.email?.split('@').first;
+
+                        String? getFirstWord(String? value) {
+                          if (value == null) return null;
+                          final trimmed = value.trim();
+                          if (trimmed.isEmpty) return null;
+                          return trimmed.split(RegExp(r'\s+')).first;
+                        }
+
+                        final nickname = () {
+                          if (alias != null && alias.isNotEmpty) return alias;
+                          if (firstName != null && firstName.isNotEmpty) return firstName;
+                          final displayFirst = getFirstWord(displayName);
+                          if (displayFirst != null) return displayFirst;
+                          if (emailFallback != null && emailFallback.isNotEmpty) return emailFallback;
+                          return 'Jugador';
+                        }();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hola $nickname!',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '¿A qué quieres jugar hoy?',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                      loading: () => const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF137FEC),
+                        ),
+                      ),
+                      error: (error, stack) => Center(
+                        child: Text(
+                          'No pudimos cargar tu perfil',
+                          style: TextStyle(
+                            color: Colors.redAccent.withOpacity(0.9),
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF137FEC),
+                    ),
+                  ),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      'No pudimos cargar tu perfil',
+                      style: TextStyle(
+                        color: Colors.redAccent.withOpacity(0.9),
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

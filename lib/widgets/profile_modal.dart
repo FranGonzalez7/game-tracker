@@ -3,13 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
-import '../services/profile_service.dart';
 import '../providers/auth_provider.dart';
-
-/// 🧑‍💻 Provider para el servicio de perfil (así no repito instancias)
-final profileServiceProvider = Provider<ProfileService>((ref) {
-  return ProfileService();
-});
+import '../providers/profile_provider.dart';
 
 /// 🪪 Modal para editar mi perfil de usuario
 class ProfileModal extends ConsumerStatefulWidget {
@@ -29,7 +24,8 @@ class ProfileModal extends ConsumerStatefulWidget {
 }
 
 class _ProfileModalState extends ConsumerState<ProfileModal> {
-  final TextEditingController _displayNameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _aliasController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
@@ -45,10 +41,22 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
 
   @override
   void dispose() {
-    _displayNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _aliasController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  void _setNameFallback(String? fullName) {
+    if (fullName == null || fullName.trim().isEmpty) return;
+    final parts = fullName.trim().split(RegExp(r'\s+'));
+    if (_firstNameController.text.isEmpty) {
+      _firstNameController.text = parts.first;
+    }
+    if (parts.length > 1 && _lastNameController.text.isEmpty) {
+      _lastNameController.text = parts.sublist(1).join(' ');
+    }
   }
 
   /// 📥 Carga los datos del perfil actual (todavía me lío con tantas fuentes)
@@ -63,13 +71,20 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
       
       if (profile != null) {
         // ☁️ Si existe en Firestore, uso esos datos fresquitos
-        if (profile['displayName'] != null) {
-          _displayNameController.text = profile['displayName'];
-        } else if (user?.displayName != null) {
-          // 🔁 Si no encuentro nada, regreso a lo que diga Firebase Auth
-          _displayNameController.text = user!.displayName!;
+        if (profile['firstName'] != null) {
+          _firstNameController.text = profile['firstName'];
         }
-        
+        if (profile['lastName'] != null) {
+          _lastNameController.text = profile['lastName'];
+        }
+        if (_firstNameController.text.isEmpty || _lastNameController.text.isEmpty) {
+          _setNameFallback(profile['displayName'] as String?);
+        }
+        if ((_firstNameController.text.isEmpty || _lastNameController.text.isEmpty) &&
+            user?.displayName != null) {
+          _setNameFallback(user!.displayName);
+        }
+
         if (profile['alias'] != null) {
           _aliasController.text = profile['alias'];
         } else if (user != null) {
@@ -82,13 +97,13 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
         }
       } else if (user != null) {
         // 🙃 Si no hay perfil en Firestore, me quedo con lo que da Firebase Auth
-        _displayNameController.text = user.displayName ?? '';
+        _setNameFallback(user.displayName);
         _aliasController.text = user.uid.substring(0, 8);
       }
     } catch (e) {
       // 🤫 Si falla la carga, no paro todo, solo uso los datos que tenga a mano
       if (user != null) {
-        _displayNameController.text = user.displayName ?? '';
+        _setNameFallback(user.displayName);
         _aliasController.text = user.uid.substring(0, 8);
       }
     }
@@ -177,17 +192,27 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
         await profileService.uploadProfilePhoto(_selectedImage!);
       }
 
+      final firstName = _firstNameController.text.trim();
+      final lastName = _lastNameController.text.trim();
+      final alias = _aliasController.text.trim();
+      final bio = _bioController.text.trim();
+
       // ✏️ Luego actualizo el nombre que ve Firebase Auth
-      if (_displayNameController.text.isNotEmpty) {
-        await user.updateDisplayName(_displayNameController.text);
+      final authDisplayName = [firstName, lastName]
+          .where((value) => value.isNotEmpty)
+          .join(' ')
+          .trim();
+      if (authDisplayName.isNotEmpty) {
+        await user.updateDisplayName(authDisplayName);
         await user.reload();
       }
 
       // 🪄 También actualizo los datos extra en Firestore
       await profileService.updateProfile(
-        displayName: _displayNameController.text.isEmpty ? null : _displayNameController.text,
-        alias: _aliasController.text.isEmpty ? null : _aliasController.text,
-        bio: _bioController.text.isEmpty ? null : _bioController.text,
+        firstName: firstName.isEmpty ? null : firstName,
+        lastName: lastName.isEmpty ? null : lastName,
+        alias: alias.isEmpty ? null : alias,
+        bio: bio.isEmpty ? null : bio,
       );
 
       // 🔄 Finalmente refresco el estado de autenticación para que se note el cambio
@@ -360,13 +385,22 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
                         ),
                         const SizedBox(height: 32),
 
-                        // 📝 Nombre de visualización (lo que se ve en la app)
+                        // 📝 Nombre y apellidos (los manejo por separado ahora)
                         TextField(
-                          controller: _displayNameController,
+                          controller: _firstNameController,
                           decoration: const InputDecoration(
                             labelText: 'Nombre',
                             hintText: 'Tu nombre',
                             prefixIcon: Icon(Icons.badge_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _lastNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Apellidos',
+                            hintText: 'Tus apellidos',
+                            prefixIcon: Icon(Icons.person_outline),
                           ),
                         ),
                         const SizedBox(height: 16),

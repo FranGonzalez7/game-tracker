@@ -95,7 +95,8 @@ class ProfileService {
 
   /// 📝 Actualiza los datos del perfil del usuario
   Future<void> updateProfile({
-    String? displayName,
+    String? firstName,
+    String? lastName,
     String? alias,
     String? bio,
   }) async {
@@ -105,7 +106,15 @@ class ProfileService {
 
     try {
       final data = <String, dynamic>{};
-      if (displayName != null) data['displayName'] = displayName;
+      if (firstName != null) data['firstName'] = firstName;
+      if (lastName != null) data['lastName'] = lastName;
+      final fullName = [
+        if (firstName != null && firstName.trim().isNotEmpty) firstName.trim(),
+        if (lastName != null && lastName.trim().isNotEmpty) lastName.trim(),
+      ].join(' ').trim();
+      if (fullName.isNotEmpty) {
+        data['displayName'] = fullName;
+      }
       if (alias != null) data['alias'] = alias;
       if (bio != null) data['bio'] = bio;
       data['updatedAt'] = FieldValue.serverTimestamp();
